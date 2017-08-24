@@ -4,7 +4,6 @@ from __future__ import division
 
 
 class InputData:
-	
 	def __init__(self, templateName, resultName):
 		self.project = Project()
 		self.invoice = Invoice(templateName, resultName)
@@ -15,6 +14,7 @@ class InputData:
 		self.total.update(task)
 		self.tasks.append(task)
 
+
 class Project:
 	def setID(self, id):
 		self.setattr(self, 'id', id)
@@ -24,7 +24,8 @@ class Project:
 
 	def setDescription(self, desc):
 		self.setattr(self, 'description', desc)
-	
+
+
 class Invoice:
 	def __init__(self, templateName, resultName):
 		self.templateName = templateName
@@ -32,6 +33,7 @@ class Invoice:
 		
 	def setID(self, id):
 		self.setattr(self, 'id', id)
+
 
 class Price:		
 	def __init__(self, subtotal=0, vat=None):
@@ -42,8 +44,8 @@ class Price:
 			self.total = subtotal + self.vat
 		else:
 			self.total = subtotal
-		
-		
+
+
 class Task:
 	def __init__(self, description, duration, wage, vat=None):
 		self.description = description
@@ -53,9 +55,10 @@ class Task:
 		
 	@staticmethod
 	def parseDuration(string, delimiter):
-		time = map(lambda x: int(x), string.split(delimiter))	# Convert to decimal
+		time = map(lambda x: int(x), string.split(delimiter))
 		return(float(time[0] + time[1] / float(60)))
-	
+
+
 class Total:
 	def __init__(self):
 		self.price = Price()
