@@ -35,7 +35,9 @@ class Invoice:
 		self.setattr(self, 'id', id)
 
 
-class Price:		
+class Price:
+	unit = '€'
+			
 	def __init__(self, subtotal=0, vat=None):
 		self.subtotal = subtotal
 		if vat:
@@ -44,6 +46,13 @@ class Price:
 			self.total = subtotal + self.vat
 		else:
 			self.total = subtotal
+			
+	@classmethod
+	def str(cls, amount):
+		if amount%1 == 0:
+			return cls.unit + str(int(amount)) + ',-'
+		else :
+			return cls.unit + "%.2f" % amount
 
 
 class Task:
@@ -57,12 +66,14 @@ class Task:
 	def parseDuration(string, delimiter):
 		time = map(lambda x: int(x), string.split(delimiter))
 		return(float(time[0] + time[1] / float(60)))
+		
+	def readableDuration(self, delimiter=':'):
+		return str(int(self.duration)) + delimiter + "%02d" % (int((self.duration%1)*60))
 
 
-class Total:
+class Total(Task):
 	def __init__(self):
-		self.price = Price()
-		self.hours = 0
+		Task.__init__(None, 0, 0)
 		
 	def update(self, newTask):
 		p = newTask.price
@@ -71,5 +82,5 @@ class Total:
 		self.price.total += p.total
 		self.price.vatPercentage = ((p.total / p.subtotal) - 1) * 100
 		
-		self.hours += newTask.duration
-		self.wage = self.price.subtotal / self.hours
+		self.duration += newTask.duration
+		self.wage = self.price.subtotal / self.duration
