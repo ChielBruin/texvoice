@@ -1,6 +1,11 @@
 # coding: UTF-8
+
+from inputData import Price
+from texvoiceTemplateLoader import TexvoiceTemplateLoader
+
+import subprocess, os
 		
-class TexvoiceCompiler():	
+class TexvoiceCompiler(object):	
 	def __init__(self, tmpFolder, content, inputData):
 		self.tmpFolder = '.tmp'
 		self.content = content
@@ -23,32 +28,33 @@ class TexvoiceCompiler():
 		for task in self.inputData.tasks:			
 			row = template.replace('\\description', task.description)	\
 				.replace('\\wage', Price.str(task.wage))				\
-				.replace('\\duration', task.readableDuration()) \
-			self.applyPricing(row, task.price)
+				.replace('\\duration', task.readableDuration())
+			row = self.applyPricing(row, task.price)
 			listing += row
 			
 		self.content = self.content.replace(self.content[start:end + 17], listing)
 	
-	def applyIfExists(self, keyword, value, content=None):
+	def replaceIfExists(self, keyword, value, content=None):
 		if not content:
 			content = self.content
 			
-		if content.contains(keyword):
+		if keyword in content:
 			return content.replace(keyword, value)
 		else:
 			return content
 	
 	def applyPricing(self, content, price):
 		result = content.replace('\\subtotal', Price.str(price.subtotal)) 	\
-			.replace('\\total', self.curr(hours * price))
-		result = self.replaceIfExists('\\vatPercentage', price.vatPercentage, result)
-		result = self.replaceIfExists('\\vat', price.vat, result)
+			.replace('\\total', Price.str(price.total))
+		result = self.replaceIfExists('\\vatPercentage', str(price.vatPercentage), result)
+		result = self.replaceIfExists('\\vat', Price.str(price.vat), result)
+		return result
 	
 	def applyGlobalData(self):
 		total = self.inputData.total
 		
 		self.content = self.applyPricing(self.content, total.price)		\
-			.replace('\\duration', total.duration)		\
+			.replace('\\duration', total.readableDuration())		\
 			.replace('\\wage', Price.str(total.wage))
 		
 		self.content = self.replaceIfExists('\\projectID', self.inputData.project.id)
@@ -57,11 +63,11 @@ class TexvoiceCompiler():
 		self.content = self.replaceIfExists('\\invoiceID', self.inputData.invoice.id)
 	
 	def writeResultFile(self):
-		with open(self.tmpFolder + '/result.tex', 'w') as f:
+		with open(self.tmpFolder + '/' + self.inputData.invoice.resultName + '.tex', 'w') as f:
 			f.write(self.content)
 		
 	def compile2pdf(self, keepSource):
-		sourceFile = self.inputData.invoice.resultName'.tex'
+		sourceFile = self.inputData.invoice.resultName + '.tex'
 		pdfName = self.inputData.invoice.resultName + '.pdf'
 		resultFile = self.tmpFolder + '/' + pdfName
 		

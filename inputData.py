@@ -3,7 +3,7 @@
 from __future__ import division
 
 
-class InputData:
+class InputData(object):
 	def __init__(self, templateName, resultName):
 		self.project = Project()
 		self.invoice = Invoice(templateName, resultName)
@@ -15,7 +15,7 @@ class InputData:
 		self.tasks.append(task)
 
 
-class Project:
+class Project(object):
 	def setID(self, id):
 		self.setattr(self, 'id', id)
 	
@@ -26,7 +26,7 @@ class Project:
 		self.setattr(self, 'description', desc)
 
 
-class Invoice:
+class Invoice(object):
 	def __init__(self, templateName, resultName):
 		self.templateName = templateName
 		self.resultName = resultName
@@ -35,17 +35,14 @@ class Invoice:
 		self.setattr(self, 'id', id)
 
 
-class Price:
+class Price(object):
 	unit = '€'
 			
-	def __init__(self, subtotal=0, vat=None):
+	def __init__(self, subtotal=0, vat=0):
 		self.subtotal = subtotal
-		if vat:
-			self.vatPercentage = vat
-			self.vat = subtotal * (vat / 100.0)
-			self.total = subtotal + self.vat
-		else:
-			self.total = subtotal
+		self.vatPercentage = vat
+		self.vat = subtotal * (vat / 100.0)
+		self.total = subtotal + self.vat
 			
 	@classmethod
 	def str(cls, amount):
@@ -55,15 +52,15 @@ class Price:
 			return cls.unit + "%.2f" % amount
 
 
-class Task:
-	def __init__(self, description, duration, wage, vat=None):
+class Task(object):
+	def __init__(self, description, duration, wage, vat=0):
 		self.description = description
 		self.duration = duration
 		self.wage = wage
 		self.price = Price(duration * wage, vat)
 		
 	@staticmethod
-	def parseDuration(string, delimiter):
+	def parseDuration(string, delimiter=':'):
 		time = map(lambda x: int(x), string.split(delimiter))
 		return(float(time[0] + time[1] / float(60)))
 		
@@ -73,7 +70,7 @@ class Task:
 
 class Total(Task):
 	def __init__(self):
-		Task.__init__(None, 0, 0)
+		super(Total, self).__init__(None, 0, 0)
 		
 	def update(self, newTask):
 		p = newTask.price

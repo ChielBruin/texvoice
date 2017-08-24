@@ -3,7 +3,7 @@
 import os, shutil
 from zipfile import ZipFile
 
-class TexvoiceTemplateLoader:
+class TexvoiceTemplateLoader(object):
 	tmpFolder = '.tmp'
 	
 	@classmethod
@@ -18,13 +18,13 @@ class TexvoiceTemplateLoader:
 			raise res
 
 	@classmethod
-	def validate():
+	def validate(cls):
 		# TODO check if all files exist and the template version
 		# return Exception('Invalid template file')
 		return (True, 0)
 		
 	@classmethod
-	def cleanup():
+	def cleanup(cls):
 		shutil.rmtree('.tmp')
 	
 	@classmethod
