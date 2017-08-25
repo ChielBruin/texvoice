@@ -19,9 +19,22 @@ class TexvoiceTemplateLoader(object):
 
 	@classmethod
 	def validate(cls):
-		# TODO check if all files exist and the template version
-		# return Exception('Invalid template file')
-		return (True, 0)
+		# Check if files exist
+		if not os.path.isfile(cls.tmpFolder + '/VERSION'):
+			return (Exception('The template does not contain a VERSION file'), -1)	
+		if not os.path.isfile(cls.tmpFolder + '/template.tex'):
+			return (Exception('The template does not contain a template.tex file'), -1)
+		if not os.path.isfile(cls.tmpFolder + '/example.pdf'):
+			return (Exception('The template does not contain an example pdf'), -1)
+			
+		# Check version
+		with open(cls.tmpFolder + '/VERSION' , 'r') as infile:
+			line = infile.readline()
+			if 'texvoiceVersion=' not in line:
+				return (Exception('Invalid VERSION file'), -1)
+			version = int(line[line.find('texvoiceVersion=')+17:])
+
+		return (True, version)
 		
 	@classmethod
 	def cleanup(cls):

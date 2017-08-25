@@ -7,8 +7,6 @@ from inputData import InputData
 import os, sys
 import argparse
 
-_VERSION = 1
-
 def getLoader(name):
 	loaders = {
 		'CSV': TexvoiceCSVLoader()
@@ -28,8 +26,8 @@ if __name__ == '__main__':
 	
 	(content, version) = TexvoiceTemplateLoader.loadTemplate(data.invoice.templateName)
 	
-	if version < _VERSION:
-		print('You are using an old template, things might be broken')
+	if version is not TexvoiceCompiler.VERSION:
+		print('You are using a template that is designed for another version of the compiler, things might be broken')
 	
 	compiler = TexvoiceCompiler('.tmp', content, data)
 	compiler.compile()

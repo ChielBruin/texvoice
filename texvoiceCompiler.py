@@ -6,6 +6,8 @@ from texvoiceTemplateLoader import TexvoiceTemplateLoader
 import subprocess, os
 		
 class TexvoiceCompiler(object):	
+	VERSION = 1
+
 	def __init__(self, tmpFolder, content, inputData):
 		self.tmpFolder = '.tmp'
 		self.content = content
