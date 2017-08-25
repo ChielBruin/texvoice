@@ -21,8 +21,7 @@ if __name__ == '__main__':
 		raise ValueError('Please specify an input mode, input file, template and output file')
 	loader = getLoader(argv[0])
 	argv[3] = argv[3].split('.')[0]
-	data = loader.load(*argv[1:4])
-	TexvoiceDataLoader.applyArgs(data, argv[4:])
+	data = loader.load(*argv[1:4], args=argv[4:])
 	
 	(content, version) = TexvoiceTemplateLoader.loadTemplate(data.invoice.templateName)
 	
