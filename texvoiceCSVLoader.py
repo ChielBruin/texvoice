@@ -34,7 +34,8 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 	def parseConfigLine(self, line):
 		FUNCTIONS = {
 			'FACTOR2PERCENTAGE' : lambda x: int((float(x)-1) * 100),
-			'TIMESTAMP' : lambda x: idata.Task.parseDuration(x)
+			'TIMESTAMP' : lambda x: idata.Task.parseDuration(x),
+			'DECIMALCOMMA' : lambda x: x.replace(',', '.')
 		}
 		line = line[0:-1]	# Remove trailing \n
 		if len(line) is 0 or line.startswith('#'):
