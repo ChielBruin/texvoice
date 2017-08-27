@@ -55,6 +55,7 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 		if value is 'None':
 			value = None
 			
+		value = ''.join(value.replace('\'', '', 1).rsplit('\'', 1))
 		self.config[key] = (value, function)
 		
 	def get(self, data, key):
