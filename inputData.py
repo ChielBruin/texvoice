@@ -5,6 +5,11 @@ from __future__ import division
 
 class InputData(object):
 	def __init__(self, templateName, resultName):
+		if '.zip' in templateName:
+			templateName = templateName.replace('.zip', '')
+		if '.pdf' in resultName:
+			resultName = resultName.replace('.pdf', '')
+			
 		self.project = Project()
 		self.invoice = Invoice(templateName, resultName)
 		self.total = Total()

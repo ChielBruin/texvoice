@@ -8,7 +8,7 @@ class TexvoiceTemplateLoader(object):
 	
 	@classmethod
 	def loadTemplate(cls, template):
-		cls.unpack(template)
+		cls.unpack(template + '.zip')
 		
 		(res, templateVersion) = cls.validate()
 		if res == True:

@@ -1,17 +1,22 @@
 # coding: UTF-8
-import csv
+import csv, argparse
 
 import texvoiceDataLoader
 import inputData as idata
 
 class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 	config = {}
-	
-	def load(self, dataFile, template, output, args):
-		self.data = idata.InputData(template, output)
+	def __init__(self):
+		super(TexvoiceCSVLoader, self).__init__()
+		self.parser.add_argument('config', choices=['Timesheet_NL'], help="Specify the CSV config file")
+
+	def load(self, args):
+		args = self.parser.parse_args(args)
+		print args
+		self.data = idata.InputData(args.template, args.outputFile)
 		self.loadConfig('csvConfigs/Timesheet_NL.conf')
 		print self.config
-		with open(dataFile, 'rb') as csvfile:
+		with open(args.inputFile, 'rb') as csvfile:
 			reader = csv.DictReader(csvfile, delimiter=',')
 			for entry in reader:
 				description = self.get(entry, 'task.description')
@@ -54,7 +59,8 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 			
 		if value is 'None':
 			value = None
-			
+		
+		# Remove the quotes around the values
 		value = ''.join(value.replace('\'', '', 1).rsplit('\'', 1))
 		self.config[key] = (value, function)
 		
