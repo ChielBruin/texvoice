@@ -4,14 +4,14 @@ from __future__ import division
 
 
 class InputData(object):
-	def __init__(self, templateName, resultName):
+	def __init__(self, templateName, resultName, keepSource):
 		if '.zip' in templateName:
 			templateName = templateName.replace('.zip', '')
 		if '.pdf' in resultName:
 			resultName = resultName.replace('.pdf', '')
 			
 		self.project = Project()
-		self.invoice = Invoice(templateName, resultName)
+		self.invoice = Invoice(templateName, resultName, keepSource)
 		self.total = Total()
 		self.tasks = []
 		
@@ -32,9 +32,10 @@ class Project(object):
 
 
 class Invoice(object):
-	def __init__(self, templateName, resultName):
+	def __init__(self, templateName, resultName, keepSource):
 		self.templateName = templateName
 		self.resultName = resultName
+		self.keepSource = keepSource
 		
 	def setID(self, id):
 		self.setattr(self, 'id', id)
@@ -76,6 +77,11 @@ class Task(object):
 class Total(Task):
 	def __init__(self):
 		super(Total, self).__init__(None, 0, 0)
+		
+	def resetVAT(self, newVAT):
+		self.price.vatPercentage = newVAT
+		self.price.vat = self.price.subtotal * newVAT / 100
+		self.price.total = self.price.subtotal + self.price.vat
 		
 	def update(self, newTask):
 		p = newTask.price

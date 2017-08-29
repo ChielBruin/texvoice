@@ -13,12 +13,12 @@ class TexvoiceCompiler(object):
 		self.content = content
 		self.inputData = inputData
 		
-	def compile(self, keepSource=False):
+	def compile(self):
 		self.applyHourListing()
 		self.applyGlobalData()
 		
 		self.writeResultFile()
-		self.compile2pdf(keepSource)
+		self.compile2pdf()
 		TexvoiceTemplateLoader.cleanup()
 
 	def applyHourListing(self):
@@ -68,7 +68,7 @@ class TexvoiceCompiler(object):
 		with open(self.tmpFolder + '/' + self.inputData.invoice.resultName + '.tex', 'w') as f:
 			f.write(self.content)
 		
-	def compile2pdf(self, keepSource):
+	def compile2pdf(self):
 		sourceFile = self.inputData.invoice.resultName + '.tex'
 		pdfName = self.inputData.invoice.resultName + '.pdf'
 		resultFile = self.tmpFolder + '/' + pdfName
@@ -83,5 +83,5 @@ class TexvoiceCompiler(object):
 			raise ValueError('Error {} executing command: {}'.format(retcode, ' '.join(cmd)))
 		
 		os.rename(resultFile, pdfName)
-		if keepSource:
+		if self.inputData.invoice.keepSource:
 			os.rename(self.tmpFolder + '/' + sourceFile, sourceFile)

@@ -11,12 +11,11 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 		self.parser.add_argument('config', choices=['Timesheet_NL'], help="Specify the CSV config file")
 
 	def load(self, args):
-		args = self.parser.parse_args(args)
-		print args
-		self.data = idata.InputData(args.template, args.outputFile)
+		self.args = self.parser.parse_args(args)
+		self.data = idata.InputData(self.args.template, self.args.outputFile, self.args.keepSource)
 		self.loadConfig('csvConfigs/Timesheet_NL.conf')
 		print self.config
-		with open(args.inputFile, 'rb') as csvfile:
+		with open(self.args.inputFile, 'rb') as csvfile:
 			reader = csv.DictReader(csvfile, delimiter=',')
 			for entry in reader:
 				description = self.get(entry, 'task.description')
@@ -24,7 +23,7 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 				wage = float(self.get(entry, 'task.wage'))
 				self.data.addTask(idata.Task(description, duration, wage))
 				
-		self.applyArgs(args)
+		self.applyArgs()
 		return self.data
 		
 	def loadConfig(self, path):
@@ -68,16 +67,12 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 		(value, func) = self.config[key]
 		
 		if value is None:
-			# Load from argparser
-			pass
+			if key is 'task.vatPercentage':
+				result = self.args.vat
+			else:
+				raise ValueError('No value or data column could be found for ' + key)
 		else:
 			result = data[value]
 			if func:
 				result = func(result)
 		return result
-
-	def applyArgs(self, args):
-		self.data.invoice.id = '02'
-		self.data.project.id = 'MTIS'
-		self.data.project.client = 'M-TIS'
-		self.data.project.description = ''
