@@ -9,17 +9,20 @@ By creating your own template a custom invoice can be created that fits your com
 - [Timesheet](https://play.google.com/store/apps/details?id=com.rauscha.apps.timesheet) [Dutch version]
 
 Currently only the Dutch version is supported, due to a language specific `.csv`. format.
-I plan to make the tool more flexible by making a generic way to parse `.csv` exports in many formats and maybe support for different formats (See the roadmap).
+By the usage of CSV config files, it is easy to add support for a new tool that exports CSV files.
 
 ## Template structure
 `texvoice` uses Latex templates for building the invoices. 
 These templates contain placeholder macros that are subsituted with the timekeeping data when creating the invoice.
 A template file is a `.zip` archive containing all the files that are needed by the template file itself.
-This template file is simply called `template.tex`. The archive should also contain a `.pdf` example of the template, making the following structure.
+This template file is simply called `template.tex`. Furthermore, the archive should contain a file called `VERSION`. 
+This file contains the versions of texvoice for which the template is created and therefore is compatible.
+The archive should also contain a `example.pdf` example of the template, making the following structure.
 
 ```
 MyTemplate.zip
      |
+     | VERSION
      | template.tex
      | example.pdf
 ```
@@ -27,18 +30,24 @@ MyTemplate.zip
 ### Keywords
 The template can contain several keywords that are substituted for values from the data when creating the invoices.
 These keywords belong to one of two groups, either related to a single task entry or globally to the entire invoice/project.  
-Note that the hourly wage is task-data and therefore not global. 
-In the case of a wage that is the same for the entire project, the (global) average wage can be used as this should be equal.
+Note that some keywords related to pricing are in both groups, this makes the substituted values dependend on the current scope of the compiler.
 
 _Task data:_
 - `\description`  
  The description of this task
-- `\hours`  
+- `\duration`  
  The amount of hours spent on this task
-- `\price`  
+- `\wage`  
  The hourly wage for this task
+- `\subtotal`  
+ The total price of this task excluding VAT (= time * price)
 - `\total`  
- The total price of this task (= time * price)
+ The total price of this task including VAT (= time * price + VAT)
+- `\vatPercentage`  
+ The VAT percentage on this tasks price
+- `\vat`  
+ The total VAT added on this tasks price
+ 
 - `\begin{hourListing} <format> \end{hourListing}`  
  The line(s) contained in this block are created for each entry in the input data.  
  In the `<format>`, previously mentioned keywords are substituted
@@ -52,24 +61,25 @@ _Project data:_
  The ID of this invoice as a method of distinguishing different invoices for the same client
 - `\projectDescription`  
  The description of the project
-- `\avgPrice`  
+- `\wage`  
  The average hourly wage paid on all tasks
-- `\priceSubtotal`  
- The price excluding VAT
-- `\VAT`  
+ Note: You dhould only use this when the hourly wage is the same for all tasks, or things might get confusing for the client
+- `\duration`  
+ The total duration of all tasks
+- `\subtotal`  
+ The total price excluding VAT
+- `\vatPercentage`  
  The VAT percentage
-- `\priceVAT`  
+ Note: You dhould only use this when the VAT is the same for all tasks, or things might get confusing for the client
+- `\vat`  
  The added price by VAT
-- `\priceTotal`  
- The toal price including VAT
+- `\total`  
+ The total price including VAT
  
  ## Roadmap
- - Improve the architecture of the code  
-  The current code is a (working) proof of concept, but not very well written
- - Add support for all `.csv` exports  
-  Make use of layout configs to make them work with many tools without writing any code
  - Add some more layouts
  - Add support for multipage invoices
+ - Better error handling
  
  ## Contributions
  Feel free to contribute new templates or add support for more timekeeping tools
