@@ -32,7 +32,8 @@ class TexvoiceTemplateLoader(object):
 			line = infile.readline()
 			if 'texvoiceVersion=' not in line:
 				return (Exception('Invalid VERSION file'), -1)
-			version = int(line[line.find('texvoiceVersion=')+17:])
+			versionString = line[line.find('texvoiceVersion=')+17:].split(',')
+			version = map(lambda x: int(x), versionString)
 
 		return (True, version)
 		

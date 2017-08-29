@@ -28,7 +28,7 @@ if __name__ == '__main__':
 	
 	(content, version) = TexvoiceTemplateLoader.loadTemplate(data.invoice.templateName)
 	
-	if version is not TexvoiceCompiler.VERSION:
+	if not TexvoiceCompiler.VERSION in version:
 		print('You are using a template that is designed for another version of the compiler, things might be broken')
 	
 	compiler = TexvoiceCompiler('.tmp', content, data)
