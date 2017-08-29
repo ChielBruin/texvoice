@@ -50,6 +50,11 @@ class Price(object):
 		self.vat = subtotal * (vat / 100.0)
 		self.total = subtotal + self.vat
 			
+	def resetVAT(self, newVAT):
+		self.vatPercentage = newVAT
+		self.vat = self.subtotal * newVAT / 100
+		self.total = self.subtotal + self.vat
+
 	@classmethod
 	def str(cls, amount):
 		if amount%1 == 0:
@@ -77,11 +82,6 @@ class Task(object):
 class Total(Task):
 	def __init__(self):
 		super(Total, self).__init__(None, 0, 0)
-		
-	def resetVAT(self, newVAT):
-		self.price.vatPercentage = newVAT
-		self.price.vat = self.price.subtotal * newVAT / 100
-		self.price.total = self.price.subtotal + self.price.vat
 		
 	def update(self, newTask):
 		p = newTask.price

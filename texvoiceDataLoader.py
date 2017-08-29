@@ -29,4 +29,6 @@ class TexvoiceDataLoader(object):
 		self.data.project.description = self.args.projectDescription
 		
 		if self.args.vat:
-			self.data.total.resetVAT(self.args.vat)
+			self.data.total.price.resetVAT(self.args.vat)
+			for task in self.data.tasks:
+				task.price.resetVAT(self.args.vat)
