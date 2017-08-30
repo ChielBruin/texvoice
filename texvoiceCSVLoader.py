@@ -21,7 +21,8 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 				description = self.get(entry, 'task.description')
 				duration = self.get(entry, 'task.duration')
 				wage = float(self.get(entry, 'task.wage'))
-				self.data.addTask(idata.Task(description, duration, wage))
+				vat = float(self.get(entry, 'task.vatPercentage'))
+				self.data.addTask(idata.Task(description, duration, wage, vat))
 				
 		self.applyArgs()
 		return self.data
@@ -36,10 +37,18 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 			print(self.config)
 				
 	def parseConfigLine(self, line):
+		def chainedFunctions(value, funcs):
+			result = value
+			for func in funcs:
+				result = FUNCTIONS[func.upper()](result)
+			return result
+			
+			
 		FUNCTIONS = {
-			'FACTOR2PERCENTAGE' : lambda x: int((float(x)-1) * 100),
+			'FACTOR2PERCENTAGE' : lambda x: (float(x)-1) * 100,
 			'TIMESTAMP' : lambda x: idata.Task.parseDuration(x),
-			'DECIMALCOMMA' : lambda x: x.replace(',', '.')
+			'DECIMALCOMMA' : lambda x: x.replace(',', '.'),
+			'DECIMALCOMMA@FACTOR2PERCENTAGE' : lambda x: FUNCTIONS['FACTOR2PERCENTAGE'](FUNCTIONS['DECIMALCOMMA'](x))
 		}
 		line = line[0:-1]	# Remove trailing \n
 		if len(line) is 0 or line.startswith('#'):
@@ -52,9 +61,13 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 		key = key[1:-1]
 		function = None
 		
-		if "@" in value:
-			(value, func) = value.rsplit('@', 1)
-			function = FUNCTIONS[func.upper()]
+		if '\'@' in value:
+			(value, func) = value.split('\'@', 1)
+			if '@' in func: # Chained functions
+				funcs = func.split('@')
+				function = lambda x: chainedFunctions(x, funcs)
+			else:
+				function = FUNCTIONS[func.upper()]
 			
 		if value is 'None':
 			value = None

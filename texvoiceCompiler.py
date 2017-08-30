@@ -48,7 +48,7 @@ class TexvoiceCompiler(object):
 	def applyPricing(self, content, price):
 		result = content.replace('\\subtotal', Price.str(price.subtotal)) 	\
 			.replace('\\total', Price.str(price.total))
-		result = self.replaceIfExists('\\vatPercentage', str(price.vatPercentage), result)
+		result = self.replaceIfExists('\\vatPercentage', price.strVAT(), result)
 		result = self.replaceIfExists('\\vat', Price.str(price.vat), result)
 		return result
 	

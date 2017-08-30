@@ -57,14 +57,19 @@ class Price(object):
 
 	@classmethod
 	def str(cls, amount):
-		if amount%1 == 0:
-			return cls.unit + str(int(amount)) + ',-'
-		else :
-			return cls.unit + "%.2f" % amount
+		# TODO: this is kinda broken
+		#if amount%1 == 0:
+			#return cls.unit + str(int(amount)) + ',-'
+		#else :
+			#return cls.unit + "%.2f" % (amount + 0.005)	# Make sure rounding goes well
+		return cls.unit + "%.2f" % amount
+
+	def strVAT(self):
+		return "%.1f" % self.vatPercentage
 
 
 class Task(object):
-	def __init__(self, description, duration, wage, vat=0):
+	def __init__(self, description, duration, wage, vat):
 		self.description = description
 		self.duration = duration
 		self.wage = wage
@@ -81,14 +86,15 @@ class Task(object):
 
 class Total(Task):
 	def __init__(self):
-		super(Total, self).__init__(None, 0, 0)
+		super(Total, self).__init__(None, 0, 0, 0)
 		
 	def update(self, newTask):
 		p = newTask.price
 		self.price.subtotal += p.subtotal
 		self.price.vat += p.vat
 		self.price.total += p.total
-		self.price.vatPercentage = ((p.total / p.subtotal) - 1) * 100
+		self.price.vatPercentage = ((self.price.total / self.price.subtotal) - 1) * 100
+		print self.price.vatPercentage
 		
 		self.duration += newTask.duration
 		self.wage = self.price.subtotal / self.duration
