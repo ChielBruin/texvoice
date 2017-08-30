@@ -94,7 +94,6 @@ class Total(Task):
 		self.price.vat += p.vat
 		self.price.total += p.total
 		self.price.vatPercentage = ((self.price.total / self.price.subtotal) - 1) * 100
-		print self.price.vatPercentage
 		
 		self.duration += newTask.duration
 		self.wage = self.price.subtotal / self.duration

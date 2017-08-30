@@ -14,7 +14,7 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 		self.args = self.parser.parse_args(args)
 		self.data = idata.InputData(self.args.template, self.args.outputFile, self.args.keepSource)
 		self.loadConfig('csvConfigs/Timesheet_NL.conf')
-		print self.config
+
 		with open(self.args.inputFile, 'rb') as csvfile:
 			reader = csv.DictReader(csvfile, delimiter=',')
 			for entry in reader:
@@ -33,8 +33,6 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 			while line:
 				self.parseConfigLine(line)
 				line = configFile.readline()
-				
-			print(self.config)
 				
 	def parseConfigLine(self, line):
 		def chainedFunctions(value, funcs):
