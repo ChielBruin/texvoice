@@ -75,6 +75,9 @@ class Task(object):
 		self.wage = wage
 		self.price = Price(duration * wage, vat)
 		
+		self.expenses = None
+		self.travel = None
+		
 	@staticmethod
 	def parseDuration(string, delimiter=':'):
 		time = map(lambda x: int(x), string.split(delimiter))

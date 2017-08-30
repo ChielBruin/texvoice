@@ -6,7 +6,7 @@ from texvoiceTemplateLoader import TexvoiceTemplateLoader
 import subprocess, os
 		
 class TexvoiceCompiler(object):	
-	VERSION = 1
+	VERSION = 2
 
 	def __init__(self, tmpFolder, content, inputData):
 		self.tmpFolder = '.tmp'
@@ -30,17 +30,20 @@ class TexvoiceCompiler(object):
 		
 		return (start - 1, end + 6 + len(name), template)
 		
-	def applyOptional(self, content, section, data):
+	def applyOptional(self, content, section, data, price):
 		(start, end, template) = self.findSection(section)
 		if start is -1:		# No listing found
 			return content
 			
-		if data is None:
+		print data.keys()
+			
+		if data[data.keys()[0]] is None:	# Empty data
 			result = ''
 		else:
-			result = self.applyPricing(template, data.price) \
-				.replace('\\description', data.description)
-		
+			result = self.applyPricing(template, price)
+			for key in data.keys():
+				result = result.replace('\\' + key, data[key])
+				
 		return content.replace(self.content[start:end], result)
 
 	def applyHourListing(self):
@@ -51,12 +54,25 @@ class TexvoiceCompiler(object):
 		listing = ''
 		
 		for task in self.inputData.tasks:
-			row = self.applyOptional(template, 'expenses', task)			
-			row = self.applyOptional(row, 'travel', task)			
-			row = row.replace('\\description', task.description)	\
-				.replace('\\wage', Price.str(task.wage))				\
-				.replace('\\duration', task.readableDuration())
-			row = self.applyPricing(row, task.price)
+			expenses = {
+				'description': None
+			}
+			travel = {
+				'description': None,
+				'from': None,
+				'to': None,
+				'distance': None
+			}
+			hours = {
+				'description': task.description,
+				'wage': Price.str(task.wage),
+				'duration': task.readableDuration()
+			}
+			
+			row = self.applyOptional(template, 'expenses', expenses, task.price)			
+			row = self.applyOptional(row, 'travel', travel, task.price)			
+			row = self.applyOptional(row, 'hours', hours, task.price)			
+			
 			listing += row
 			
 		self.content = self.content.replace(self.content[start:end], listing)
