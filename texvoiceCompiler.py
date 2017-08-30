@@ -30,15 +30,30 @@ class TexvoiceCompiler(object):
 		
 		return (start - 1, end + 6 + len(name), template)
 		
+	def applyOptional(self, content, section, data):
+		(start, end, template) = self.findSection(section)
+		if start is -1:		# No listing found
+			return content
+			
+		if data is None:
+			result = ''
+		else:
+			result = self.applyPricing(template, data.price) \
+				.replace('\\description', data.description)
+		
+		return content.replace(self.content[start:end], result)
+
 	def applyHourListing(self):
-		(start, end, template) = self.findSection('hourListing')
+		(start, end, template) = self.findSection('texvoiceListing')
 		if start is -1:		# No listing found
 			return
 		
 		listing = ''
 		
-		for task in self.inputData.tasks:			
-			row = template.replace('\\description', task.description)	\
+		for task in self.inputData.tasks:
+			row = self.applyOptional(template, 'expenses', task)			
+			row = self.applyOptional(row, 'travel', task)			
+			row = row.replace('\\description', task.description)	\
 				.replace('\\wage', Price.str(task.wage))				\
 				.replace('\\duration', task.readableDuration())
 			row = self.applyPricing(row, task.price)
