@@ -21,10 +21,20 @@ class TexvoiceCompiler(object):
 		self.compile2pdf()
 		TexvoiceTemplateLoader.cleanup()
 
+	def findSection(self, name):
+		start = self.content.find('\\begin{%s}' % name)
+		if start is -1:
+			return (-1, -1, '')
+		end = self.content.find('\\end{%s}' % name)
+		template = self.content[start + len(name) + 10:end-2]
+		
+		return (start - 1, end + 6 + len(name), template)
+		
 	def applyHourListing(self):
-		start = self.content.find('\\begin{hourListing}')
-		end = self.content.find('\\end{hourListing}')
-		template = self.content[start+21:end-2]
+		(start, end, template) = self.findSection('hourListing')
+		if start is -1:		# No listing found
+			return
+		
 		listing = ''
 		
 		for task in self.inputData.tasks:			
@@ -34,7 +44,9 @@ class TexvoiceCompiler(object):
 			row = self.applyPricing(row, task.price)
 			listing += row
 			
-		self.content = self.content.replace(self.content[start:end + 17], listing)
+		self.content = self.content.replace(self.content[start:end], listing)
+		
+		self.applyHourListing() # Recursive call for multiple listings
 	
 	def replaceIfExists(self, keyword, value, content=None):
 		if not content:
