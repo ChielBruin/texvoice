@@ -59,7 +59,7 @@ class TexvoiceCompiler(object):
 			
 		if entry.task:
 			hours = {
-				'price': Price.str(entry.task.wage),
+				'wage': Price.str(entry.task.wage),
 				'duration': entry.task.readableDuration()
 			}
 		else:
@@ -120,6 +120,7 @@ class TexvoiceCompiler(object):
 		self.content = self.replaceIfExists('\\wage', Price.str(total.task.wage))
 		self.content = self.replaceIfExists('\\duration', total.task.readableDuration())
 		self.content = self.replaceIfExists('\\distance', total.travel.distance)
+		self.content = self.replaceIfExists('\\price', total.travel.unitPrice)
 	
 	def writeResultFile(self):
 		with open(self.tmpFolder + '/' + self.inputData.getResultName() + '.tex', 'w') as f:

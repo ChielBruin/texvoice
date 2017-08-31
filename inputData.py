@@ -150,7 +150,8 @@ class Total(Entry):
 		
 	def updateTravel(self, travel):
 		self.updatePrice(self.travel.price, travel.price)
-		self.travel.distance += travel.distance		
+		self.travel.distance += travel.distance	
+		self.task.unitPrice = self.travel.price.subtotal / self.travel.distance
 
 	def updatePrice(self, price, newPrice):
 		# Update local price
