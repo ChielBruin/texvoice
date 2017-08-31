@@ -17,7 +17,7 @@ These templates contain placeholder macros that are subsituted with the timekeep
 A template file is a `.zip` archive containing all the files that are needed by the template file itself.
 This template file is simply called `template.tex`. Furthermore, the archive should contain a file called `VERSION`. 
 This file contains the versions of texvoice for which the template is created and therefore is compatible.
-The archive should also contain a `example.pdf` example of the template, making the following structure.
+The archive should also contain a `example.pdf` example of the template, making the following structure:
 
 ```
 MyTemplate.zip
@@ -29,30 +29,73 @@ MyTemplate.zip
 
 ### Keywords
 The template can contain several keywords that are substituted for values from the data when creating the invoices.
-These keywords belong to one of two groups, either related to a single task entry or globally to the entire invoice/project.  
-Note that some keywords related to pricing are in both groups, this makes the substituted values dependend on the current scope of the compiler.
+These keywords belong to one of two groups, either related to a single task entry or globally to the entire invoice/project.
+As the second group contains accumulations of many entries, they might not contain sensible data. 
+For example the description field remains empty and the VAT percentage becomes a weighted average.
+The two groups also contain two scoping levels. The first (local) level applies to either the hours, the expenses or the travel costs. The global scope uses the totals of the three local scopes.
 
-_Task data:_
+``` Latex
+% Listing for each data entry
+\begin{texvoiceListing}
+     \begin{hours}
+          ...  % Only hour fields 
+     \end{hours}
+     \begin{expenses}
+          ...  % Only expenses fields
+     \end{expenses}
+     \begin{travel}
+          ...  % Only travel fields
+     \end{travel}
+     ...  % Accumulative data of the three groups
+\end{texvoiceListing}
+
+% Totals/averages of all entries
+\begin{hours}
+     ...  % Only hour fields 
+\end{hours}
+\begin{expenses}
+     ...  % Only expenses fields
+\end{expenses}
+\begin{travel}
+     ...  % Only travel fields
+\end{travel}
+...  % Accumulative data of the three groups
+```
+In the template you can choose any of the following keywords that will be substituted. 
+Note, again, that in the outer scope averages and accumulative values are used, so the values they contain might not make very much sense to use.
+
 - `\description`  
- The description of this task
-- `\duration`  
- The amount of hours spent on this task
-- `\wage`  
- The hourly wage for this task
+ The description of the entry
 - `\subtotal`  
- The total price of this task excluding VAT (= time * price)
+ The total price of this entry excluding VAT
 - `\total`  
- The total price of this task including VAT (= time * price + VAT)
+ The total price of this entry including VAT
 - `\vatPercentage`  
- The VAT percentage on this tasks price
+ The VAT percentage on the price
 - `\vat`  
- The total VAT added on this tasks price
+ The total VAT added on the price
+
+Each of the three sections can make use of some extra keywords. The ones marked with a `*` can also be used in the outer scope.
+
+_Hours_
+- `\duration*`  
+ The amount of hours spent on this task
+- `\wage*`  
+ The hourly wage for this task
  
-- `\begin{hourListing} <format> \end{hourListing}`  
- The line(s) contained in this block are created for each entry in the input data.  
- In the `<format>`, previously mentioned keywords are substituted
+_Expenses_
+
+_Travel_
+- `\price*`  
+ The price per unit of travel
+- `\distance*`  
+ The distance traveled
+- `\from`  
+ The origin of the trip
+- `\to`  
+ The destination of the trip
  
-_Project data:_
+Throughout the entire document some other keywords related to the invoice are substituted:
 - `\clientName`  
  The (company) name of the client
 - `\projectID`  
@@ -61,20 +104,6 @@ _Project data:_
  The ID of this invoice as a method of distinguishing different invoices for the same client
 - `\projectDescription`  
  The description of the project
-- `\wage`  
- The average hourly wage paid on all tasks
- Note: You dhould only use this when the hourly wage is the same for all tasks, or things might get confusing for the client
-- `\duration`  
- The total duration of all tasks
-- `\subtotal`  
- The total price excluding VAT
-- `\vatPercentage`  
- The VAT percentage
- Note: You dhould only use this when the VAT is the same for all tasks, or things might get confusing for the client
-- `\vat`  
- The added price by VAT
-- `\total`  
- The total price including VAT
  
  ## Roadmap
  - Add some more layouts
