@@ -122,12 +122,13 @@ class TexvoiceCompiler(object):
 		self.content = self.replaceIfExists('\\distance', total.travel.distance)
 	
 	def writeResultFile(self):
-		with open(self.tmpFolder + '/' + self.inputData.invoice.resultName + '.tex', 'w') as f:
+		with open(self.tmpFolder + '/' + self.inputData.getResultName() + '.tex', 'w') as f:
 			f.write(self.content)
 		
 	def compile2pdf(self):
-		sourceFile = self.inputData.invoice.resultName + '.tex'
-		pdfName = self.inputData.invoice.resultName + '.pdf'
+		resultName = self.inputData.getResultName()
+		sourceFile = resultName + '.tex'
+		pdfName = resultName + '.pdf'
 		resultFile = self.tmpFolder + '/' + pdfName
 		
 		cmd = ['pdflatex', '-interaction', 'nonstopmode', sourceFile]

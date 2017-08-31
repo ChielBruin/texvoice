@@ -12,7 +12,7 @@ class TexvoiceCSVLoader(texvoiceDataLoader.TexvoiceDataLoader):
 
 	def load(self, args):
 		self.args = self.parser.parse_args(args)
-		self.data = idata.InputData(self.args.template, self.args.outputFile, self.args.keepSource)
+		self.data = idata.InputData(self.args.template, self.args.keepSource)
 		self.loadConfig('csvConfigs/Timesheet_NL.conf')
 
 		with open(self.args.inputFile, 'rb') as csvfile:

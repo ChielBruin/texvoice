@@ -4,14 +4,11 @@ from __future__ import division
 
 
 class InputData(object):
-	def __init__(self, templateName, resultName, keepSource):
+	def __init__(self, templateName, keepSource):
 		if '.zip' in templateName:
 			templateName = templateName.replace('.zip', '')
-		if '.pdf' in resultName:
-			resultName = resultName.replace('.pdf', '')
-			
 		self.project = Project()
-		self.invoice = Invoice(templateName, resultName, keepSource)
+		self.invoice = Invoice(templateName, keepSource)
 		self.total = Total()
 		self.entries = []
 		
@@ -19,6 +16,9 @@ class InputData(object):
 		entry = Entry(task, expenses, travel)
 		self.total.update(entry)
 		self.entries.append(entry)
+		
+	def getResultName(self):
+		return self.project.id + '-' + self.invoice.id
 
 
 class Project(object):
@@ -33,9 +33,8 @@ class Project(object):
 
 
 class Invoice(object):
-	def __init__(self, templateName, resultName, keepSource):
+	def __init__(self, templateName, keepSource):
 		self.templateName = templateName
-		self.resultName = resultName
 		self.keepSource = keepSource
 		
 	def setID(self, id):
