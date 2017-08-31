@@ -30,22 +30,47 @@ class TexvoiceCompiler(object):
 		
 		return (start - 1, end + 6 + len(name), template)
 		
-	def applyOptional(self, content, section, data, price):
+	def applyOptional(self, content, section, data, entry):
 		(start, end, template) = self.findSection(section)
 		if start is -1:		# No listing found
 			return content
-			
-		print data.keys()
-			
-		if data[data.keys()[0]] is None:	# Empty data
+						
+		if entry is None:	# Empty data
 			result = ''
 		else:
-			result = self.applyPricing(template, price)
+			result = self.applyPricing(template, entry.price)
+			data['description'] = entry.description
 			for key in data.keys():
-				result = result.replace('\\' + key, data[key])
+				result = result.replace('\\' + key, data[key] if data[key] else '!UNKNOWN VALUE!')
 				
 		return content.replace(self.content[start:end], result)
 
+	def applyOptionals(self, template, entry):
+		expenses = { }
+		if entry.travel:
+			travel = {
+				'from': entry.travel.fromLocation,
+				'to': entry.travel.toLocation,
+				'distance': str(entry.travel.distance),
+				'price': Price.str(entry.travel.unitPrice)
+			}
+		else:
+			travel = { }
+			
+		if entry.task:
+			hours = {
+				'price': Price.str(entry.task.wage),
+				'duration': entry.task.readableDuration()
+			}
+		else:
+			hours = { }
+		
+		row = self.applyOptional(template, 'expenses', expenses, entry.expenses)			
+		row = self.applyOptional(row, 'travel', travel, entry.travel)			
+		row = self.applyOptional(row, 'hours', hours, entry.task)
+		
+		return row
+		
 	def applyHourListing(self):
 		(start, end, template) = self.findSection('texvoiceListing')
 		if start is -1:		# No listing found
@@ -53,26 +78,9 @@ class TexvoiceCompiler(object):
 		
 		listing = ''
 		
-		for task in self.inputData.tasks:
-			expenses = {
-				'description': None
-			}
-			travel = {
-				'description': None,
-				'from': None,
-				'to': None,
-				'distance': None
-			}
-			hours = {
-				'description': task.description,
-				'wage': Price.str(task.wage),
-				'duration': task.readableDuration()
-			}
-			
-			row = self.applyOptional(template, 'expenses', expenses, task.price)			
-			row = self.applyOptional(row, 'travel', travel, task.price)			
-			row = self.applyOptional(row, 'hours', hours, task.price)			
-			
+		for entry in self.inputData.entries:
+			row = self.applyOptionals(template, entry)		
+			row = self.applyPricing(row, entry.price)
 			listing += row
 			
 		self.content = self.content.replace(self.content[start:end], listing)
@@ -97,15 +105,21 @@ class TexvoiceCompiler(object):
 	
 	def applyGlobalData(self):
 		total = self.inputData.total
-		
-		self.content = self.applyPricing(self.content, total.price)		\
-			.replace('\\duration', total.readableDuration())		\
-			.replace('\\wage', Price.str(total.wage))
-		
+
+		pre = ''
+		while not pre is self.content:
+			pre = self.content
+			self.content = self.applyOptionals(self.content, total)
+
+		self.content = self.applyPricing(self.content, total.price)		
 		self.content = self.replaceIfExists('\\projectID', self.inputData.project.id)
 		self.content = self.replaceIfExists('\\clientName', self.inputData.project.client)
 		self.content = self.replaceIfExists('\\projectDescription', self.inputData.project.description)
 		self.content = self.replaceIfExists('\\invoiceID', self.inputData.invoice.id)
+		
+		self.content = self.replaceIfExists('\\wage', Price.str(total.task.wage))
+		self.content = self.replaceIfExists('\\duration', total.task.readableDuration())
+		self.content = self.replaceIfExists('\\distance', total.travel.distance)
 	
 	def writeResultFile(self):
 		with open(self.tmpFolder + '/' + self.inputData.invoice.resultName + '.tex', 'w') as f:
