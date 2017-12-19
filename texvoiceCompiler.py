@@ -92,7 +92,7 @@ class TexvoiceCompiler(object):
 			content = self.content
 			
 		if keyword in content:
-			return content.replace(keyword, value)
+			return content.replace(keyword, str(value))
 		else:
 			return content
 	
