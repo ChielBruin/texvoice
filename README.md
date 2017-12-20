@@ -5,7 +5,7 @@ This tool inserts the exported data in the selected Latex template and compiles 
 This way all invoices follow the exact same styling and this styling is fully configurable to your personal preference.  
 By creating your own template a custom invoice can be created that fits your company (some Latex knowledge is required for this).
 
-> ### Texvoice is currently being iproved to its version 2.0, see the roadmap for more information
+> ### Texvoice is currently being improved to its version 2.0, see the roadmap for more information
 
 ## Supported timekeeping tools
 - [Timesheet](https://play.google.com/store/apps/details?id=com.rauscha.apps.timesheet) [Dutch version]
