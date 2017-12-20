@@ -1,9 +1,11 @@
 # texvoice
-Create professional and consistent-looking invoices from the exports of your timekeeping tools.
+Create professional and consistent-looking invoices from the exports of your timekeeping tools using Latex templates.
 
-This tool inserts the exported data in a Latex template and compiles it to a `.pdf` file.
+This tool inserts the exported data in the selected Latex template and compiles it to a `.pdf` file.
 This way all invoices follow the exact same styling and this styling is fully configurable to your personal preference.  
 By creating your own template a custom invoice can be created that fits your company (some Latex knowledge is required for this).
+
+> ### Texvoice is currently being iproved to its version 2.0, see the roadmap for more information
 
 ## Supported timekeeping tools
 - [Timesheet](https://play.google.com/store/apps/details?id=com.rauscha.apps.timesheet) [Dutch version]
@@ -106,9 +108,36 @@ Throughout the entire document some other keywords related to the invoice are su
  The description of the project
  
  ## Roadmap
- - Add some more layouts
- - Add support for multipage invoices
- - Better error handling
+ I am currently working on improving the tool quite a bit. These changes will result in the 2.0 version of texvoice, and will include the following features (checked options already implemented):
+ - A proper GUI instead of the CLI interface
+   - [ ] Views that show the data and allow for modifications
+   - [ ] A list of configurable options
+   - [ ] Template selection
+   - [ ] Template previews
+   - [ ] A compile button
+   - [ ] Possibility to import data exports
+   - [ ] Remove the CLI interface (as even I find it inpractical)
+   
+ - An improved compiler
+   - [ ] Move to the usage of the Texcaller module
+   - [ ] Make the compiler more modular
+   - [ ] Change the data imput format
+   - [ ] Try to stay comliant with the compiler2
+   - [ ] Add possibilities for a multipage listing (may break the previous feature)
+   
+ - Update data loading
+   - [ ] Improve the loader to a new output format
+   - [ ] General refactoring
+   
+ - Update the template format
+   - [ ] Change the preview to an image
+   - [ ] Change the version file to include more data
+   - [ ] Add author/copyright fields
+   - [ ] Add a description
+   - [ ] Allow for custom fields
+   - [ ] Add required tag data to check compatibility when compiling
+ 
+ The current tool will remain working until the work finishes on V2.0. This newer version will then replace the original tool. Check the `texvoice2` branch for the progress being made.
  
  ## Contributions
  Feel free to contribute new templates or add support for more timekeeping tools
