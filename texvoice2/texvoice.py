@@ -1,125 +1,146 @@
+from tkEditTable import TKEditTable
+
 from tkinter import *
-
-class TKEditTable:
-	'''
-	Class for displaying a mutable data table.
-	The table has a header and each row can be eddited or even removed.
-	The first row acts as an input field for new rows.
-	'''
-	def __init__(self, tkroot, width, header):
-		self.root = Frame(tkroot)
-		self.root.grid()
-		
-		self.width = width
-		self.keys = header
-		self.height = -1	# Account for the input row
-		
-		self._addHeader(header)
-		self._addRow([""]*self.width, lambda: self._commitRow(), "->")
-	
-	def _commitRow(self):
-		'''
-		Helper function to commit the input row to the table.
-		'''
-		row = self.root.grid_slaves(row=1)
-		data = []
-		for i, e in enumerate(reversed(row)):
-			if (type(e) == Button):
-				continue
-			data.append(e.get())
-			e.delete(0, END) 
-		self.addRow(data)
-			
-		
-	def _addHeader(self, titles):
-		'''
-		Add the header to the table
-		'''
-		if (len(titles) != self.width):
-			raise Exception("Size mismatch")
-		if(self.root.grid_slaves(row=0)):
-			raise Exception("The header must be the first element in the table")
-			
-		# TODO: Spacing the titles correctly
-		for i in range(len(titles)):
-			Label(self.root, text=titles[i].upper()).grid(row=0, column=i)
-		
-	def _addRow(self, row, buttonLambda, token):
-		'''
-		Add a row to the table containing the data in 'row' and a button with the text 'token' and function 'buttonLambda'.
-		'''
-		if (len(row) != self.width):
-			raise Exception("Size mismatch")
-		
-		for i in range(len(row)):
-			entry = Entry(self.root)
-			entry.grid(row=self.height+2, column=i)
-			entry.insert(0, str(row[i]))
-		Button(self.root, text=str(token), command=buttonLambda).grid(row=self.height+2, column=self.width)
-		self.height += 1
-		
-	def addRow(self, row):
-		'''
-		Add a row to the table containing 'row' as data and a delete button for the row
-		'''
-		rowID = self.height + 1
-		self._addRow(row, lambda: self.deleteRow(rowID), "X")
-		
-	def deleteRow(self, idx):
-		'''
-		Delete the row at position idx
-		'''
-		# TODO: Display are you sure prompt
-		print(idx)
-		# TODO: Actually remove the row		
-	
-	def getData(self):
-		'''
-		Returns a 2D array containing all the currently stored data
-		'''
-		res = []
-		for i in range(self.height):
-			row = self.root.grid_slaves(row=i+2)
-			rowRes = []
-			for i, entry in enumerate(reversed(row)):
-				if (type(entry) == Button):
-					continue
-				rowRes.append(entry.get())
-			res.append(rowRes)
-		return {"keys": self.keys ,"data": res}
+import tkinter.messagebox as tkMessageBox
 
 
+#######################
+# Global testing data #
+#######################
 
-
-
-
-
-
-
-
-def drawTasks(root, tasks):
-	table = TKEditTable(root, 3, ["Description", "Duration", "price"])
-	for i, task in enumerate(tasks):
-		table.addRow(task)
-		
-	print(table.getData())
-		
-		
-def main():
-	root = Tk()
-	
-	tasks = [
+tasks = {
+	"keys": ["Description", "Duration", "price"],
+	"data": [
 		["hello", 12, 13.50],
 		["hella", 13, 14.50],
 		["helle", 14, 15.50],
 		["helly", 15, 16.50],
 	]
-	
-	drawTasks(root, tasks)
-	Entry(root).grid()
-	drawTasks(root, tasks)
+}
 
-	root.mainloop()
+expenses = {
+	"keys": ["Description", "price"],
+	"data": [
+		["bananas", 123.00],
+		["apples", 2.50],
+	]
+}
+
+travel = {
+	"keys": ["Description", "from", "to", "distance", "price"],
+	"data": [
+		["back", "here", "there", 12, 12.50],
+		["and forth", "there", "here", 13, 12.50],
+	]
+}
+data = {"tasks" : tasks, "expenses": expenses, "travel": travel}
+options = {
+	"keepSource": ("Keep the compiled text sources", False),
+	"invoiceID":  ("The ID of this invoice", ""),
+	"keepSource1": ("Keep the compiled text sources", False),
+	"invoiceID1":  ("The ID of this invoice", ""),
+	"keepSource2": ("Keep the compiled text sources", False),
+	"invoiceID2":  ("The ID of this invoice", "")		
+}
+
+
+
+class MainApp:
+	'''
+	The main app. Displays all the graphic elements and handles the importing of data and calling the compilation task.
+	'''
+	def __init__(self):
+		self.root = Tk()
+		self.root.title("Texvoice V2 (developemnt build)")
+		self.tables = {}
+		self.optionValues = {}
+	
+	def draw(self):
+		'''
+		Draw all the graphic elements and start the main loop
+		'''
+		global data, options
+		
+		# Draw the data tables
+		self.tables["tasks"]    = self.drawTable(self.root, data["tasks"])
+		self.tables["expenses"] = self.drawTable(self.root, data["expenses"])
+		self.tables["travel"]   = self.drawTable(self.root, data["travel"])
+		
+		# Draw the options menu
+		self.optionValues = self.drawOptions(self.root, options)
+		
+		self.root.mainloop()
+		self.root.destroy()
+		
+	def drawTable(self, root, data):
+		'''
+		Draw a data table for the given data
+		'''
+		table = TKEditTable(root, data["keys"])
+		for i, row in enumerate(data["data"]):
+			table.addRow(row)
+		return table
+		
+	def drawOptions(self, root, options, maxOptions=4):
+		'''
+		Draw the list of options and the compile button
+		'''
+		frame = Frame(root)
+		frame.grid()
+		optionValues = {}
+		
+		for i, (key, value) in enumerate(options.items()):
+			container = Frame(frame)
+			container.grid(column=i%maxOptions, row=i//maxOptions)
+			l = lambda: tkMessageBox.showinfo(key, value[0])		# TODO: fix this button
+			Button(container, text=key, highlightthickness=0, bd=0, command=l).grid(column=0, row=0)
+			
+			# String option
+			if (type(value[1]) == str):
+				var = StringVar()
+				e = Entry(container, textvariable=var)
+				e.grid(column=1, row=0)
+				e.insert(0, value[1])
+				optionValues[key] = var
+				
+			# Boolean option
+			else :
+				var = BooleanVar()
+				e = Checkbutton(container, onvalue=True, offvalue=False, variable=var)
+				e.grid(column=1, row=0)
+				optionValues[key] = var
+				
+		# Add compile button
+		Button(frame, text="Compile", command=lambda: self.onCompile()).grid(row=len(options)//maxOptions,column=maxOptions)
+		return optionValues
+				
+	def gatherTableData(self):
+		'''
+		Gather all the data from the data tables
+		'''
+		data = {}
+		for key, table in self.tables.items():
+			data[key] = table.getData()
+		return data
+			
+	def gatherOptionData(self):
+		'''
+		Gather all the data from the option list
+		'''
+		data = {}
+		for key, option in self.optionValues.items():
+			data[key] = option.get()
+		return data
+			
+	def onCompile(self):
+		'''
+		Gather all the needed data and comile the invoice
+		'''
+		compileData = {}
+		compileData["data"] = self.gatherTableData()
+		compileData["options"] = self.gatherOptionData()
+		print(compileData)
+		# TODO: actually compile the document
 
 if __name__ == '__main__':
-	main()
+	MainApp().draw()
