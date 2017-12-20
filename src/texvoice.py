@@ -1,4 +1,4 @@
-from tkEditTable import TKEditTable
+from GUI.tkEditTable import TKEditTable
 
 from tkinter import *
 import tkinter.messagebox as tkMessageBox
