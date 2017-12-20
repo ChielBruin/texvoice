@@ -8,8 +8,12 @@ class TKEditTable:
 	'''
 	def __init__(self, tkroot, width, header):
 		self.root = Frame(tkroot)
-		self.root.pack()
+		self.root.grid()
+		
 		self.width = width
+		self.keys = header
+		self.height = -1	# Account for the input row
+		
 		self._addHeader(header)
 		self._addRow([""]*self.width, lambda: self._commitRow(), "->")
 	
@@ -17,11 +21,11 @@ class TKEditTable:
 		'''
 		Helper function to commit the input row to the table.
 		'''
-		row = self.root.pack_slaves()[1]
+		row = self.root.grid_slaves(row=1)
 		data = []
-		for i, e in enumerate(row.pack_slaves()):
-			if (i >= self.width):
-				break
+		for i, e in enumerate(reversed(row)):
+			if (type(e) == Button):
+				continue
 			data.append(e.get())
 			e.delete(0, END) 
 		self.addRow(data)
@@ -33,14 +37,12 @@ class TKEditTable:
 		'''
 		if (len(titles) != self.width):
 			raise Exception("Size mismatch")
-		if(len(self.root.pack_slaves()) > 0):
+		if(self.root.grid_slaves(row=0)):
 			raise Exception("The header must be the first element in the table")
 			
 		# TODO: Spacing the titles correctly
-		frame = Frame(self.root)
-		frame.pack(side=TOP, fill=X)
 		for i in range(len(titles)):
-			Label(frame, text=titles[i].upper()).pack(side=LEFT)
+			Label(self.root, text=titles[i].upper()).grid(row=0, column=i)
 		
 	def _addRow(self, row, buttonLambda, token):
 		'''
@@ -49,19 +51,18 @@ class TKEditTable:
 		if (len(row) != self.width):
 			raise Exception("Size mismatch")
 		
-		frame = Frame(self.root)
-		frame.pack(side=TOP, fill=X)
 		for i in range(len(row)):
-			entry = Entry(frame)
-			entry.pack(side=LEFT)
+			entry = Entry(self.root)
+			entry.grid(row=self.height+2, column=i)
 			entry.insert(0, str(row[i]))
-		Button(frame, text=str(token), command=buttonLambda).pack(side=LEFT)
+		Button(self.root, text=str(token), command=buttonLambda).grid(row=self.height+2, column=self.width)
+		self.height += 1
 		
 	def addRow(self, row):
 		'''
 		Add a row to the table containing 'row' as data and a delete button for the row
 		'''
-		rowID = len(self.root.pack_slaves()) - 2
+		rowID = self.height + 1
 		self._addRow(row, lambda: self.deleteRow(rowID), "X")
 		
 	def deleteRow(self, idx):
@@ -77,16 +78,15 @@ class TKEditTable:
 		Returns a 2D array containing all the currently stored data
 		'''
 		res = []
-		for row in self.root.pack_slaves():
-			if (type(row.pack_slaves()[0]) == Label):
-				continue
+		for i in range(self.height):
+			row = self.root.grid_slaves(row=i+2)
 			rowRes = []
-			for i, entry in enumerate(row.pack_slaves()):
-				if (i >= self.width):
-					break
+			for i, entry in enumerate(reversed(row)):
+				if (type(entry) == Button):
+					continue
 				rowRes.append(entry.get())
 			res.append(rowRes)
-		return res
+		return {"keys": self.keys ,"data": res}
 
 
 
@@ -116,7 +116,7 @@ def main():
 	]
 	
 	drawTasks(root, tasks)
-	Entry(root).pack()
+	Entry(root).grid()
 	drawTasks(root, tasks)
 
 	root.mainloop()
