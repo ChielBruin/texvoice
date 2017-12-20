@@ -110,8 +110,8 @@ Throughout the entire document some other keywords related to the invoice are su
  ## Roadmap
  I am currently working on improving the tool quite a bit. These changes will result in the 2.0 version of texvoice, and will include the following features (checked options already implemented):
  - A proper GUI instead of the CLI interface
-   - [ ] Views that show the data and allow for modifications
-   - [ ] A list of configurable options
+   - [X] Views that show the data and allow for modifications
+   - [X] A list of configurable options
    - [ ] Template selection
    - [ ] Template previews
    - [ ] A compile button
