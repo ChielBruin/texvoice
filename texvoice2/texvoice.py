@@ -36,11 +36,7 @@ travel = {
 data = {"tasks" : tasks, "expenses": expenses, "travel": travel}
 options = {
 	"keepSource": ("Keep the compiled text sources", False),
-	"invoiceID":  ("The ID of this invoice", ""),
-	"keepSource1": ("Keep the compiled text sources", False),
-	"invoiceID1":  ("The ID of this invoice", ""),
-	"keepSource2": ("Keep the compiled text sources", False),
-	"invoiceID2":  ("The ID of this invoice", "")		
+	"invoiceID":  ("The ID of this invoice", "")	
 }
 
 
