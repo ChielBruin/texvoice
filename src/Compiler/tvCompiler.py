@@ -36,33 +36,85 @@ def compile(latex, resultFile, keepSource=False):
 	
 	return info
 	
+def checkTemplateVersion(version):
+	'''
+	Check if the given template version is compatible with the compiler.
+	'''
+	return version in [2]
+	
 def generateGlobalData(data):
 	'''
 	Generate the totals from the data.
 	'''
 	return {}
+
+def findSection(tex, name, beg=0):
+	'''
+	Find a section with a given name in the input.
+	When a starting point is given only returns a section after that point
+	'''		
+	startStr = '\\begin{%s}' % name
+	endStr = '\\end{%s}' % name
+	
+	start = tex.find(startStr, beg)
+	if start is -1:
+		return ((-1, len(startStr)), (-1, len(endStr)))
+	end = tex.find(endStr, start)
+	if end is -1:
+		raise Exception('Cannot find closing tag for %s' % name)
+	return ((start, len(startStr)), (end, len(endStr)))
 	
 def getListings(tex):
 	'''
 	Get a list of the positions of all the listings in the input
 	'''
-	return [(0, 0)]
+	res = []
+	finger = 0
+	while (True):
+		(start, end) = findSection(tex, 'texvoiceListing', finger)
+		if (start[0] is -1):
+			return res
+		else:
+			finger = end[0] + end[1]
+			res.append((start, end))
 	
 def applyListing(start, end, tex, data):
 	'''
 	Apply as much of the data as is possible in the given range.
 	Returns the result and the data that couldn't be applied.
 	'''
-	return (tex, data)
+	res = ''
+	template = tex[start[0] + start[1]:end[0]]
 	
-def applyGlobalData(tex, data)
+	#tmp = template
+	#for key in data:
+	#	(start, end) = findSection(template, key)
+	#	if (start[0] is -1):
+	#		continue
+	#	for tag in data[key]['keys']:
+	#		value = 
+	#		template = replaceAll(template, tag, value)
+	
+	return (tex[:start[0]] + res + tex[end[0] + end[1]:], data)
+	
+def applyGlobalData(tex, data):
 	'''
 	Apply all the global data to the input.
 	'''
 	return tex
 
-def applyOptions(tex, options)
+def applyOptions(tex, options):
 	'''
 	Apply all the options to the input.
 	'''
 	return tex
+	
+	
+latex = r'''\documentclass{article}
+\begin{document}
+\begin{texvoiceListing}
+Hello world!
+\end{texvoiceListing}
+\end{document}'''
+
+print(convert({'data': [], 'options': []}, latex))
