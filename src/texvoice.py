@@ -1,5 +1,6 @@
 from tkEditTable import TKEditTable
 import tvDataLoader
+import tvCompiler
 
 from Tkinter import *
 
@@ -8,34 +9,10 @@ from Tkinter import *
 # Global testing data #
 #######################
 
-tasks = {
-	"keys": ["Description", "Duration", "price"],
-	"data": [
-		["hello", 12, 13.50],
-		["hella", 13, 14.50],
-		["helle", 14, 15.50],
-		["helly", 15, 16.50],
-	]
-}
-
-expenses = {
-	"keys": ["Description", "price"],
-	"data": [
-		["bananas", 123.00],
-		["apples", 2.50],
-	]
-}
-
-travel = {
-	"keys": ["Description", "from", "to", "distance", "price"],
-	"data": [
-		["back", "here", "there", 12, 12.50],
-		["and forth", "there", "here", 13, 12.50],
-	]
-}
 options = {
 	"keepSource": ("Keep the compiled text sources", False),
-	"invoiceID":  ("The ID of this invoice", "")	
+	"invoiceID":  ("The ID of this invoice", ""),
+	"resultFile": ("The file location where to store the result", "../result.pdf")
 }
 
 
@@ -135,8 +112,11 @@ class MainApp:
 		compileData = {}
 		compileData["data"] = self.gatherTableData()
 		compileData["options"] = self.gatherOptionData()
-		print(compileData)
-		# TODO: actually compile the document
+		compileData["options"]["template"] = 'none'
+		
+		tex = tvCompiler.convert(compileData)
+		print(tex)
+		tvCompiler.compile(tex, compileData['options']['resultFile'], keepSource=compileData['options']['keepSource'])
 	
 	def loadData(self, datafile, mode, conf):
 		self.data = tvDataLoader.load(datafile, mode, conf)

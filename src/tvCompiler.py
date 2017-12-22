@@ -1,13 +1,9 @@
 import texcaller
 
-def bigStep(inputData, template, resultFile):
-	'''
-	Convert and compile in a single step.
-	'''
-	latex = convert(inputData, template)
-	return compile(latex, resultFile, keepSource=inputData['options']['keepSource'])
+def loadTemplate(template):
+	return latex
 	
-def convert(inputData, template):
+def convert(inputData):
 	'''
 	Convert the template and the data to a .tex file that can be compiled
 	'''
@@ -15,8 +11,8 @@ def convert(inputData, template):
 	data = inputData['data']
 	globalData = generateGlobalData(data)
 	
-	result = template
-	listings = getListings(template)
+	result = loadTemplate(inputData['options']['template'])
+	listings = getListings(result)
 	for (start, end) in listings:
 		(result, data) = applyListing(start, end, result, data)
 		
@@ -83,8 +79,8 @@ def applyListing(start, end, tex, data):
 	Apply as much of the data as is possible in the given range.
 	Returns the result and the data that couldn't be applied.
 	'''
-	res = ''
 	template = tex[start[0] + start[1]:end[0]]
+	res = template
 	
 	#tmp = template
 	#for key in data:
@@ -109,12 +105,9 @@ def applyOptions(tex, options):
 	'''
 	return tex
 	
-	
 latex = r'''\documentclass{article}
 \begin{document}
 \begin{texvoiceListing}
 Hello world!
 \end{texvoiceListing}
 \end{document}'''
-
-print(convert({'data': [], 'options': []}, latex))
