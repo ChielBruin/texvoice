@@ -1,4 +1,5 @@
 from tkEditTable import TKEditTable
+import tvDataLoader
 
 from Tkinter import *
 
