@@ -38,10 +38,12 @@ class TKEditTable:
 		'''
 		if(self.root.grid_slaves(row=0)):
 			raise Exception("The header must be the first element in the table")
-			
-		# TODO: Spacing the titles correctly
+
 		for i in range(len(titles)):
-			Label(self.root, text=titles[i].upper()).grid(row=0, column=i)
+			title = titles[i]
+			if '(' in title:
+				title = title.split('(')[0]
+			Label(self.root, text=title.upper()).grid(row=0, column=i)
 		
 	def _addRow(self, row, buttonLambda, token):
 		'''

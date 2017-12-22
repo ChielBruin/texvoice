@@ -73,7 +73,7 @@ class MainApp:
 		'''
 		Draw a data table for the given data
 		'''
-		table = TKEditTable(root, map(lambda x: x.split('(')[0], data["keys"]))
+		table = TKEditTable(root, data["keys"])
 		for i, row in enumerate(data["data"]):
 			table.addRow(row)
 		return table
@@ -140,7 +140,6 @@ class MainApp:
 		# TODO: actually compile the document
 	
 	def loadData(self, datafile, mode, conf):
-		#data = tvDataLoader.load('../timesheet2.csv', 'csv', {'configFile': '../../csvConfigs/Timesheet_NL.conf'})
 		self.data = tvDataLoader.load(datafile, mode, conf)
 		
 
