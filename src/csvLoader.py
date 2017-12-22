@@ -24,11 +24,16 @@ def buildInitialData(config):
 	for _, entry in config.items():
 		for (field, _) in entry:
 			group, name = field.split('.', 1)
+			
+			if '!' in group:
+				group = group[1:]
+
 			if group in data:
 				data[group]['keys'].append(name)
 				data[group]['keys'].sort()
 			else:
 				data[group] = {'keys': [name], 'data': []}
+			
 	return data
 	
 def parseConfig(configFile):
@@ -55,6 +60,7 @@ def parseRow(row, data, config):
 	Parse a single row of the CSV file and put it in the data object.
 	'''
 	newData = {}
+	incomplete = []
 	for tag in row:
 		# Skip data for which we do not know what to do
 		if not (tag in config):
@@ -62,14 +68,29 @@ def parseRow(row, data, config):
 		for (fieldDesc, func) in config[tag]:
 			group, field = fieldDesc.split('.', 1)
 			val = str(func(row[tag]) if func else row[tag])	# Apply function if needed
+			
+			# If this value is important and missing, remove the group
+			if '!' in group:
+				group = group[1:]
+				if val is '':
+					incomplete.append(group)
+					break
+			
+			
 			if not (group in newData):
 				newData[group] = [(field, val)]
 			else:
 				newData[group].append((field, val))
 
-	# TODO: Sanitize the newly added data
+	# Remove all incomplete groups
+	for group in incomplete:
+		newData[group] = []
+
+	# Update the data with the new data
 	for group in newData:
 		values = newData[group]
+		if not values:
+			continue
 		headers = data[group]['keys']
 		new = [None] * len(headers)
 		for (field, val) in values:
@@ -98,6 +119,7 @@ def parseConfigLine(line):
 				(lambda time: float(time[0] + time[1] / float(60)))(map(lambda v: int(v), x.split(':'))),
 		'DECIMALCOMMA' : lambda x, arg: x.replace(',', '.'),		# Replace the comma to a dot in the decimal notation
 		'DEFAULT' : lambda x, arg: arg if x is '' else x,			# When empty insert the default value
+		'EMPTY' : lambda x, arg: '' if x is arg else x				# If equal to the argument make it empty
 	}
 	
 	# Pre-checks
