@@ -25,7 +25,7 @@ class TKEditTable:
 		row = self.root.grid_slaves(row=1)
 		data = []
 		for i, e in enumerate(reversed(row)):
-			if (type(e) == Button):
+			if (isinstance(e, Button)):
 				continue
 			data.append(e.get())
 			e.delete(0, END) 
@@ -81,8 +81,7 @@ class TKEditTable:
 			row = self.root.grid_slaves(row=i+2)
 			rowRes = []
 			for i, entry in enumerate(reversed(row)):
-				if (type(entry) == Button):
-					continue
-				rowRes.append(entry.get())
+				if not (isinstance(entry, Button)):
+					rowRes.append(entry.get())
 			res.append(rowRes)
 		return {"keys": self.keys ,"data": res}
