@@ -1,7 +1,6 @@
-from GUI.tkEditTable import TKEditTable
+from tkEditTable import TKEditTable
 
-from tkinter import *
-import tkinter.messagebox as tkMessageBox
+from Tkinter import *
 
 
 #######################
@@ -72,7 +71,7 @@ class MainApp:
 		'''
 		Draw a data table for the given data
 		'''
-		table = TKEditTable(root, data["keys"])
+		table = TKEditTable(root, map(lambda x: x.split('(')[0], data["keys"]))
 		for i, row in enumerate(data["data"]):
 			table.addRow(row)
 		return table
