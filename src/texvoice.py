@@ -32,7 +32,6 @@ travel = {
 		["and forth", "there", "here", 13, 12.50],
 	]
 }
-data = {"tasks" : tasks, "expenses": expenses, "travel": travel}
 options = {
 	"keepSource": ("Keep the compiled text sources", False),
 	"invoiceID":  ("The ID of this invoice", "")	
@@ -49,17 +48,19 @@ class MainApp:
 		self.root.title("Texvoice V2 (developemnt build)")
 		self.tables = {}
 		self.optionValues = {}
+		self.data = {}
 	
 	def draw(self):
 		'''
 		Draw all the graphic elements and start the main loop
 		'''
-		global data, options
-		
+		global options
+		self.loadData('../timesheet2.csv', 'csv', {'configFile': '../csvConfigs/Timesheet_NL.conf'})
+			
 		# Draw the data tables
-		self.tables["tasks"]    = self.drawTable(self.root, data["tasks"])
-		self.tables["expenses"] = self.drawTable(self.root, data["expenses"])
-		self.tables["travel"]   = self.drawTable(self.root, data["travel"])
+		self.tables["tasks"]    = self.drawTable(self.root, self.data["hours"])
+		self.tables["expenses"] = self.drawTable(self.root, self.data["expenses"])
+		self.tables["travel"]   = self.drawTable(self.root, self.data["travel"])
 		
 		# Draw the options menu
 		self.optionValues = self.drawOptions(self.root, options)
@@ -136,6 +137,11 @@ class MainApp:
 		compileData["options"] = self.gatherOptionData()
 		print(compileData)
 		# TODO: actually compile the document
+	
+	def loadData(self, datafile, mode, conf):
+		#data = tvDataLoader.load('../timesheet2.csv', 'csv', {'configFile': '../../csvConfigs/Timesheet_NL.conf'})
+		self.data = tvDataLoader.load(datafile, mode, conf)
+		
 
 if __name__ == '__main__':
 	MainApp().draw()
