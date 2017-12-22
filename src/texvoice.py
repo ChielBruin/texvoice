@@ -67,7 +67,6 @@ class MainApp:
 		self.optionValues = self.drawOptions(self.root, options)
 		
 		self.root.mainloop()
-		self.root.destroy()
 		
 	def drawTable(self, root, data):
 		'''
