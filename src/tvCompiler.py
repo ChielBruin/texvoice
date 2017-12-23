@@ -17,7 +17,6 @@ def convert(inputData):
 	globalData = generateGlobalData(data)
 	
 	result = loadTemplate(inputData['options']['template'])
-	print(result)
 	listings = getListings(result)
 	for (start, end) in listings:
 		(result, data) = applyListing(start, end, result, data)
@@ -36,7 +35,7 @@ def compile(latex, resultFile, keepSource=False):
 	with open(resultFile, 'w') as f:
 		f.write(pdf)
 	
-	return info
+	return (not (pdf is []), info)
 	
 def checkTemplateVersion(version):
 	'''
@@ -85,17 +84,49 @@ def applyListing(start, end, tex, data):
 	Apply as much of the data as is possible in the given range.
 	Returns the result and the data that couldn't be applied.
 	'''
-	template = tex[start[0] + start[1]:end[0]]
-	res = template
 	
-	#tmp = template
-	#for key in data:
-		#(start, end) = findSection(template, key)
-		#if (start[0] is -1):
-			#continue
-		#for tag in data[key]['keys']:
-			#value = 
-			#template = replaceAll(template, tag, value)
+	def applyListingGroup(data, group, start, end, template):
+		'''
+		Apply a single entry for the given group in the template.
+		Return True when an entry is applied, False otherwise.
+		'''
+		template = tex[start[0] + start[1]:end[0]]
+		res = template
+		
+		return (False, tex[:start[0]] + res + tex[end[0] + end[1]:])
+	
+	def applyListingGlobal(data, template):
+		'''
+		Apply a the global data in the template.
+		Return True when data is applied, False otherwise.
+		'''
+		for group in data:
+			# TODO: Apply the accumulative data for each group
+			pass
+		# TODO: Apply the global accumulatives
+		return (False, template)
+	
+	template = tex[start[0] + start[1]:end[0]]
+	res = ''
+	
+	while True:
+		(didApplyGroup, tmp) = (False, template)
+		
+		# For each group
+		for group in data:
+			(groupStart, groupEnd) = findSection(template, group)
+			if (groupStart[0] is -1):
+				continue
+			(didApplyGroup, tmp) = applyListingGroup(data, group, groupStart, groupEnd, tmp)
+		
+		# Global accumulates
+		(didApplyGlobal, tmp) = applyListingGlobal(data, tmp)
+		
+		# If you did apply anythng store it otherwise we are done 
+		if didApplyGlobal or didApplyGroup:
+			 res += tmp
+		else:
+			break
 	
 	return (tex[:start[0]] + res + tex[end[0] + end[1]:], data)
 	

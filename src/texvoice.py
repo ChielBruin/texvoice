@@ -3,6 +3,7 @@ import tvDataLoader
 import tvCompiler
 
 from Tkinter import *
+import tkMessageBox
 
 
 #######################
@@ -85,7 +86,9 @@ class MainApp:
 				optionValues[key] = var
 				
 		# Add compile button
-		Button(frame, text="Compile", command=lambda: self.onCompile()).grid(row=len(options)//maxOptions,column=maxOptions)
+		Button(frame, text="Compile", command=lambda: 
+			(lambda successful, info: tkMessageBox.showinfo('Compilation successful', 'The document successfully compiled') if successful else tkMessageBox.showerror('Compilation failed', info))(*self.onCompile())
+		).grid(row=len(options)//maxOptions,column=maxOptions)
 		return optionValues
 				
 	def gatherTableData(self):
@@ -116,7 +119,7 @@ class MainApp:
 		
 		tex = tvCompiler.convert(compileData)
 		print(tex)
-		tvCompiler.compile(tex, compileData['options']['resultFile'], keepSource=compileData['options']['keepSource'])
+		return tvCompiler.compile(tex, compileData['options']['resultFile'], keepSource=compileData['options']['keepSource'])
 	
 	def loadData(self, datafile, mode, conf):
 		self.data = tvDataLoader.load(datafile, mode, conf)
