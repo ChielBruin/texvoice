@@ -114,20 +114,21 @@ Throughout the entire document some other keywords related to the invoice are su
    - [X] A list of configurable options
    - [ ] Template selection
    - [ ] Template previews
-   - [ ] A compile button
+   - [X] A compile button
+   - [ ] Display compile feedback
    - [ ] Possibility to import data exports
-   - [ ] Remove the CLI interface (as even I find it inpractical)
+   - [ ] Rework the CLI interface
    
  - An improved compiler
-   - [ ] Move to the usage of the Texcaller module
+   - [X] Move to the usage of the Texcaller module
    - [ ] Make the compiler more modular
-   - [ ] Change the data imput format
+   - [X] Change the data imput format
    - [ ] Try to stay comliant with the compiler2
    - [ ] Add possibilities for a multipage listing (may break the previous feature)
    
  - Update data loading
-   - [ ] Improve the loader to a new output format
-   - [ ] General refactoring
+   - [X] Improve the loader to a new output format
+   - [X] General refactoring
    
  - Update the template format
    - [ ] Change the preview to an image
