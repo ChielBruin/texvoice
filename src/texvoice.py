@@ -12,7 +12,8 @@ from Tkinter import *
 options = {
 	"keepSource": ("Keep the compiled text sources", False),
 	"invoiceID":  ("The ID of this invoice", ""),
-	"resultFile": ("The file location where to store the result", "../result.pdf")
+	"resultFile": ("The file location where to store the result", "../result.pdf"),
+	"template": ("The template to use when compiling", "../testTemplate.tex")
 }
 
 
@@ -112,7 +113,6 @@ class MainApp:
 		compileData = {}
 		compileData["data"] = self.gatherTableData()
 		compileData["options"] = self.gatherOptionData()
-		compileData["options"]["template"] = 'none'
 		
 		tex = tvCompiler.convert(compileData)
 		print(tex)

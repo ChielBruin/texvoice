@@ -1,7 +1,12 @@
 import texcaller
 
-def loadTemplate(template):
-	return latex
+
+def loadTemplate(templateFile):
+	'''
+	Load the specified template file from disk.
+	'''
+	with open(templateFile, 'r') as f:
+		return f.read()
 	
 def convert(inputData):
 	'''
@@ -12,6 +17,7 @@ def convert(inputData):
 	globalData = generateGlobalData(data)
 	
 	result = loadTemplate(inputData['options']['template'])
+	print(result)
 	listings = getListings(result)
 	for (start, end) in listings:
 		(result, data) = applyListing(start, end, result, data)
@@ -84,12 +90,12 @@ def applyListing(start, end, tex, data):
 	
 	#tmp = template
 	#for key in data:
-	#	(start, end) = findSection(template, key)
-	#	if (start[0] is -1):
-	#		continue
-	#	for tag in data[key]['keys']:
-	#		value = 
-	#		template = replaceAll(template, tag, value)
+		#(start, end) = findSection(template, key)
+		#if (start[0] is -1):
+			#continue
+		#for tag in data[key]['keys']:
+			#value = 
+			#template = replaceAll(template, tag, value)
 	
 	return (tex[:start[0]] + res + tex[end[0] + end[1]:], data)
 	
@@ -104,10 +110,3 @@ def applyOptions(tex, options):
 	Apply all the options to the input.
 	'''
 	return tex
-	
-latex = r'''\documentclass{article}
-\begin{document}
-\begin{texvoiceListing}
-Hello world!
-\end{texvoiceListing}
-\end{document}'''
