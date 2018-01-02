@@ -4,6 +4,7 @@ import tvCompiler
 
 from Tkinter import *
 import tkMessageBox
+import argparse
 
 
 #######################
@@ -126,4 +127,21 @@ class MainApp:
 		
 
 if __name__ == '__main__':
-	MainApp().draw()
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-m', '--mode', choices=['compile', 'load'],
+		help='Modes of operation, none for normal operation (GUI)')
+	
+	parser.add_argument('-i', '--input', type=argparse.FileType('r'), default=sys.stdin,
+		help='The input to process, stdin by default')
+	parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout
+		help='The location to store the result, stdout by default')
+
+	args = parser.parse_args()
+	
+	if args.mode:
+		if args.mode is 'compile':
+			print('Compile mode')
+		if args.mode is 'load':
+			print('Load mode')
+	else :
+		MainApp().draw()
