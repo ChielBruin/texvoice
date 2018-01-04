@@ -133,7 +133,7 @@ if __name__ == '__main__':
 	
 	parser.add_argument('-i', '--input', type=argparse.FileType('r'), default=sys.stdin,
 		help='The input to process, stdin by default')
-	parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout
+	parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
 		help='The location to store the result, stdout by default')
 
 	args = parser.parse_args()
