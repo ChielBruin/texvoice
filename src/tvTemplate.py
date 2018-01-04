@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 class Template:
 	def __init__(self, templateFile):
 		self.templateFile = templateFile
@@ -72,6 +74,16 @@ class Template:
 		return data
 		
 	def applyField(self, key, value, tex):
+		FUNCTIONS = {
+			'vat': lambda key, val: str(val)+'\\%',
+			'unitPrice': lambda key, val: '%.2f'%float(val),
+			'unit': lambda key, val: str(val) if not (key == 'duration') else (lambda v: str(int(v)) + ':' + '%02d' % (int((v%1)*60))) (float(val))
+		}
+		if '(' in key:
+			key, func = key.split('(')
+			func = func[:-1]
+			if func in FUNCTIONS:
+				value = FUNCTIONS[func](key, value)
 		return tex.replace('\\' + key, value)
 		
 	def _applyGroup(self, data, group, tex=None):
