@@ -5,7 +5,7 @@ class Template:
 		self.templateFile = templateFile
 		self._tex = None
 		self._version = None
-		self._requiredFields = []
+		self._requiredFields = None
 		self._data = {}
 			
 	@property
@@ -17,6 +17,18 @@ class Template:
 			with open(self.templateFile, 'r') as f:
 				self._tex = f.read()
 		return self._tex
+		
+	@property
+	def requiredFields(self):
+		'''
+		Get the required fields and cache the result
+		'''
+		if self._requiredFields is None:
+			self._requiredFields = [
+				('invoiceID', 'The ID of this invoice'),
+				('projectID', 'The ID of this project')
+			]
+		return self._requiredFields
 
 	def applyListings(self, data):
 		while True:
@@ -52,11 +64,12 @@ class Template:
 		Returns the result and the data that couldn't be applied.
 		'''
 		res = ''
-		
 		while True:
 			(didApplyGroup, tmp) = (False, self.tex[ (start[0] + start[1]) : (end[0]) ])
 			# For each group
 			for group in data:
+				if group == 'accumulated':
+					continue
 				(didApply, tmp) = self._applyGroup(data[group], group, tex=tmp)
 				didApplyGroup = didApplyGroup or didApply
 			
@@ -74,6 +87,9 @@ class Template:
 		return data
 		
 	def applyField(self, key, value, tex):
+		'''
+		Apply all the fields with the given name to get the given value.
+		'''
 		FUNCTIONS = {
 			'vat': lambda key, val: str(val)+'\\%',
 			'unitPrice': lambda key, val: '%.2f'%float(val),
@@ -93,37 +109,52 @@ class Template:
 		'''
 		if tex is None:
 			tex = self.tex
-		(start, end) = self._findSection(group, tex=tex)
-		if start[0] is -1:
-			return (False, tex)
-			
-		if len(data['data']) is 0:
-			return (False, tex[:start[0]] + tex[end[0]+end[1]:])
-			
-		result = tex[start[0]+start[1]:end[0]]
-		row = data['data'].pop(0)
-		for index, key in enumerate(data['keys']):
-			value = row[index]
-			result = self.applyField(key, str(value), result)
+		finger = 0		
+		row = None
 		
-		return (True, tex[:start[0]] + result + tex[end[0]+end[1]:])
+		#print(group, data, self._findSection(group, tex=tex))
+		# Do not pop the data when it is not needed
+		if (not len(data['data']) is 0) and (lambda x, y: not x[0] is -1)(*self._findSection(group, tex=tex)):
+			row = data['data'].pop(0)
+		
+		# Change all the groups
+		changed = False
+		while True:
+			(start, end) = self._findSection(group, tex=tex, beg=finger)
+			finger = end[0] + end[1]
+			
+			# All groups done
+			if start[0] is -1:
+				break
+			
+			# Remove unneeded group
+			if not row:
+				tex = tex[:start[0]] + tex[end[0]+end[1]:]
+				continue
+			
+			changed = True
+			result = tex[start[0]+start[1]:end[0]]
+			
+			for index, key in enumerate(data['keys']):
+				value = row[index]
+				result = self.applyField(key, str(value), result)
+			tex = tex[:start[0]] + result + tex[end[0]+end[1]:]
+		
+		return (changed, tex)
 
-	def applyGlobal(self, data, template=None):
+	def applyGlobalAccumulatives(self, data):
 		'''
-		Apply a the global data in the template.
-		Return True when data is applied, False otherwise.
+		Apply the global data accumulations to the file.
 		'''
-		if template is None:
-			template = self.tex
-		for group in data:
-			# TODO: Apply the accumulative data for each group
-			# ApplyGroup(data[group], group, start, end, template)
-			pass
-		# TODO: Apply the global accumulatives
-		return False
+		groupData = data['groups']
+		for group in groupData:
+			self._tex = self._applyGroup(groupData[group], group)[1]
+		for field, value in data['global'].items():
+			self._tex = self.applyField(field, str(value), self._tex)[1]
 
-	def applyOptions(self, options):
+	def applyGlobalFields(self, options):
 		'''
 		Apply all the options to the input.
 		'''
-		pass
+		for field, value in options.items():
+			self._tex = self.applyField(field, str(value), self._tex)

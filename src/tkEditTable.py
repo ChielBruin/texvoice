@@ -74,7 +74,7 @@ class TKEditTable:
 		print(idx)
 		# TODO: Actually remove the row		
 	
-	def getData(self):
+	def get(self):
 		'''
 		Returns a 2D array containing all the currently stored data
 		'''

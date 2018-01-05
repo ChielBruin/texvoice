@@ -1,136 +1,33 @@
-from tkEditTable import TKEditTable
-import tvDataLoader
-import tvCompiler
-
-from Tkinter import *
-import tkMessageBox
+from tvMainApp import MainApp
 import argparse
+import sys
 
 
-#######################
-# Global testing data #
-#######################
-
-options = {
-	"keepSource": ("Keep the compiled text sources", False),
-	"invoiceID":  ("The ID of this invoice", ""),
-	"resultFile": ("The file location where to store the result", "../result.pdf"),
-	"template": ("The template to use when compiling", "../testTemplate.tex")
-}
-
-
-
-class MainApp:
+def getOptions(args):
 	'''
-	The main app. Displays all the graphic elements and handles the importing of data and calling the compilation task.
+	Get the options from the passed arguments
 	'''
-	def __init__(self):
-		self.root = Tk()
-		self.root.title("Texvoice V2 (developemnt build)")
-		self.tables = {}
-		self.optionValues = {}
-		self.data = {}
+	options = { }
+
+	#TODO: remove these overrides
+	args.output = '../result.pdf'
+	args.input = '../timesheet2.csv'
 	
-	def draw(self):
-		'''
-		Draw all the graphic elements and start the main loop
-		'''
-		global options
-		self.loadData('../timesheet2.csv', 'csv', {'configFile': '../csvConfigs/Timesheet_NL.conf'})
-			
-		# Draw the data tables
-		self.tables["tasks"]    = self.drawTable(self.root, self.data["hours"])
-		self.tables["expenses"] = self.drawTable(self.root, self.data["expenses"])
-		self.tables["travel"]   = self.drawTable(self.root, self.data["travel"])
-		
-		# Draw the options menu
-		self.optionValues = self.drawOptions(self.root, options)
-		
-		self.root.mainloop()
-		
-	def drawTable(self, root, data):
-		'''
-		Draw a data table for the given data
-		'''
-		table = TKEditTable(root, data["keys"])
-		for i, row in enumerate(data["data"]):
-			table.addRow(row)
-		return table
-		
-	def drawOptions(self, root, options, maxOptions=4):
-		'''
-		Draw the list of options and the compile button
-		'''
-		frame = Frame(root)
-		frame.grid()
-		optionValues = {}
-		
-		for i, (key, value) in enumerate(options.items()):
-			container = Frame(frame)
-			container.grid(column=i%maxOptions, row=i//maxOptions)
-			l = lambda: tkMessageBox.showinfo(key, value[0])		# TODO: fix this button
-			Button(container, text=key, highlightthickness=0, bd=0, command=l).grid(column=0, row=0)
-			
-			# String option
-			if (type(value[1]) == str):
-				var = StringVar()
-				e = Entry(container, textvariable=var)
-				e.grid(column=1, row=0)
-				e.insert(0, value[1])
-				optionValues[key] = var
-				
-			# Boolean option
-			else :
-				var = BooleanVar()
-				e = Checkbutton(container, onvalue=True, offvalue=False, variable=var)
-				e.grid(column=1, row=0)
-				optionValues[key] = var
-				
-		# Add compile button
-		Button(frame, text="Compile", command=lambda: 
-			(lambda successful, info: tkMessageBox.showinfo('Compilation successful', 'The document successfully compiled') if successful else tkMessageBox.showerror('Compilation failed', info))(*self.onCompile())
-		).grid(row=len(options)//maxOptions,column=maxOptions)
-		return optionValues
-				
-	def gatherTableData(self):
-		'''
-		Gather all the data from the data tables
-		'''
-		data = {}
-		for key, table in self.tables.items():
-			data[key] = table.getData()
-		return data
-			
-	def gatherOptionData(self):
-		'''
-		Gather all the data from the option list
-		'''
-		data = {}
-		for key, option in self.optionValues.items():
-			data[key] = option.get()
-		return data
-			
-	def onCompile(self):
-		'''
-		Gather all the needed data and comile the invoice
-		'''
-		compileData = {}
-		compileData["data"] = self.gatherTableData()
-		compileData["options"] = self.gatherOptionData()
-		
-		tex = tvCompiler.convert(compileData)
-		print(tex)
-		return tvCompiler.compile(tex, compileData['options']['resultFile'], keepSource=compileData['options']['keepSource'])
 	
-	def loadData(self, datafile, mode, conf):
-		self.data = tvDataLoader.load(datafile, mode, conf)
-		
+	options['keepSource'] = ('Keep the compiled text sources', args.keepSource)
+	options['resultFile'] = ('The file location where to store the result', args.output)
+	options['inputFile']  = ('The file location where to load the data from', args.input)
+	options['template']   = ('The template to use when compiling', '../testTemplate.tex')
+
+	return options
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-m', '--mode', choices=['compile', 'load'],
 		help='Modes of operation, none for normal operation (GUI)')
 	
+	parser.add_argument('-k', '--keepSource', type=bool, default=False,
+		help='Whether to keep the source files')
 	parser.add_argument('-i', '--input', type=argparse.FileType('r'), default=sys.stdin,
 		help='The input to process, stdin by default')
 	parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout,
@@ -138,10 +35,12 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	
+	options = getOptions(args)
+	
 	if args.mode:
 		if args.mode is 'compile':
 			print('Compile mode')
 		if args.mode is 'load':
 			print('Load mode')
 	else :
-		MainApp().draw()
+		MainApp().draw(options)
