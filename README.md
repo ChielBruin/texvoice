@@ -121,9 +121,10 @@ Throughout the entire document some other keywords related to the invoice are su
    
  - An improved compiler
    - [X] Move to the usage of the Texcaller module
-   - [ ] Make the compiler more modular
+   - [X] Make the compiler more modular
    - [X] Change the data imput format
-   - [ ] Try to stay comliant with the compiler2
+   - [X] Try to stay comliant with the compiler2
+   - [X] Add maximum length for a listing
    - [ ] Add possibilities for a multipage listing (may break the previous feature)
    
  - Update data loading
