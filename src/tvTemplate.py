@@ -31,14 +31,14 @@ class Template:
 		return self._requiredFields
 
 	def applyListings(self, data):
+		'''
+		Apply all listings.
+		'''
 		while True:
 			(start, end) = self._findSection('texvoiceListing')
 			if start[0] is -1:
 				break
 			data = self._applyListing(start, end, data)
-			
-	def applyGlobals(self, data):
-		pass
 		
 	def _findSection(self, name, beg=0, tex=None):
 		'''
@@ -99,8 +99,8 @@ class Template:
 			key, func = key.split('(')
 			func = func[:-1]
 			if func in FUNCTIONS:
-				value = FUNCTIONS[func](key, value)
-		return tex.replace('\\' + key, value)
+				value = FUNCTIONS[func](key, str(value))
+		return tex.replace('\\' + key, str(value))
 		
 	def _applyGroup(self, data, group, tex=None):
 		'''
@@ -135,9 +135,9 @@ class Template:
 			changed = True
 			result = tex[start[0]+start[1]:end[0]]
 			
-			for index, key in enumerate(data['keys']):
-				value = row[index]
-				result = self.applyField(key, str(value), result)
+			for key in reversed(sorted(data['keys'])):
+				value = row[data['keys'].index(key)]
+				result = self.applyField(key, value, result)
 			tex = tex[:start[0]] + result + tex[end[0]+end[1]:]
 		
 		return (changed, tex)
@@ -149,8 +149,11 @@ class Template:
 		groupData = data['groups']
 		for group in groupData:
 			self._tex = self._applyGroup(groupData[group], group)[1]
-		for field, value in data['global'].items():
-			self._tex = self.applyField(field, str(value), self._tex)[1]
+		
+		globalData = data['global']
+		for field in reversed(sorted(globalData['keys'])):
+			value = globalData['data'][0][globalData['keys'].index(field)]
+			self._tex = self.applyField(field, value, self._tex)
 
 	def applyGlobalFields(self, options):
 		'''

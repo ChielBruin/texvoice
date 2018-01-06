@@ -43,6 +43,12 @@ def checkTemplateVersion(version):
 	'''
 	return version in [2, 3]
 	
+def priceToString(price):
+	'''
+	Convert a price to a string representation.
+	'''
+	return '%.2f'%price
+	
 def generateAccumulatives(data):
 	'''
 	Generate the totals from the data.
@@ -52,9 +58,16 @@ def generateAccumulatives(data):
 		'global': {}
 	}
 	
+	globalSubtotal = globalVat = 0
+	
+	# Accumulate each group separately
 	for group in data:
 		keys = map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), data[group]['keys'])
 		
+		# If nothing should be accumilated, continue
+		if all(e is None for e in keys):
+			continue
+			
 		if not ('unitPrice' in keys and 'vat' in keys):
 			raise Exception('Malformed accumilative descriptors, both vat and unitPrice must be present')
 			
@@ -70,7 +83,7 @@ def generateAccumulatives(data):
 		data[group]['keys'].extend(['subtotal', 'vat', 'total'])
 		
 		totalUnits = 0
-		totalSubtotal = totalVat = totalTotal = 0
+		totalSubtotal = totalVat = 0
 		
 		# Add totals to each row and add to global totals
 		for row in data[group]['data']:
@@ -78,19 +91,28 @@ def generateAccumulatives(data):
 			unitPrice = float(row[unitPriceIdx])
 			vatPercentage = float(row[vatIdx])
 			
+			# Calculate local totals and add them to the data
 			subtotal = unit * unitPrice
 			vat = subtotal * (vatPercentage/100)
 			total = subtotal + vat
 			
-			row.extend([str(subtotal), str(vat), str(total)])
+			row.extend([
+				priceToString(subtotal), 
+				priceToString(vat), 
+				priceToString(total)
+			])
 			
+			# Add to the accumilative data
 			totalUnits += unit
-			
 			totalSubtotal += subtotal
 			totalVat += vat
-			totalTotal += total
 		
-		acc['groups'][group] = {'keys': ['subtotal', 'vat', 'total'], 'data': [[str(totalSubtotal), str(totalVat), str(totalTotal)]]}
+		# Add group totals to the data
+		acc['groups'][group] = {'keys': ['subtotal', 'vat', 'total'], 'data': [[
+			priceToString(totalSubtotal), 
+			priceToString(totalVat), 
+			priceToString(totalSubtotal + totalVat)
+		]]}
 		
 		accData = acc['groups'][group]
 		keys = data[group]['keys']
@@ -101,8 +123,20 @@ def generateAccumulatives(data):
 			keys[vatIdx].split('(')[0]
 		])
 		accData['data'][0].extend([
-			str(totalSubtotal / totalUnits) if not (totalUnits == 0) else '0',
+			priceToString(totalSubtotal / totalUnits) if not (totalUnits == 0) else '0',
 			str(totalUnits),
-			str((totalVat/totalSubtotal) * 100) if not (totalVat == 0) else '0'
+			'%.2f\\%%' % ((totalVat/totalSubtotal) * 100) if not (totalVat == 0) else '0\\%'
 		])
+		
+		# Add group totals to accumilative totals
+		globalSubtotal += totalSubtotal
+		globalVat += totalVat
+		
+	# Add the global totals
+	acc['global'] = {'keys': ['subtotal', 'vat', 'vatPercentage', 'total'], 'data': [[
+		priceToString(globalSubtotal), 
+		priceToString(globalVat), 
+		'%.2f\\%%' % ((globalVat/globalSubtotal) * 100) if not (globalVat == 0) else '0\\%', 
+		priceToString(globalSubtotal + globalVat)
+	]]}
 	data['accumulated'] = acc
