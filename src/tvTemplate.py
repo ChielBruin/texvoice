@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from __future__ import division
+
+import json
 
 class Template:
 	def __init__(self, templateFile):
@@ -65,21 +68,26 @@ class Template:
 		'''
 		res = ''
 		while True:
-			(didApplyGroup, tmp) = (False, self.tex[ (start[0] + start[1]) : (end[0]) ])
+			(didApplyGroup, tmp, totals) = (False, self.tex[ (start[0] + start[1]) : (end[0]) ], {'subtotal':0, 'vat':0})
 			# For each group
 			for group in data:
 				if group == 'accumulated':
 					continue
-				(didApply, tmp) = self._applyGroup(data[group], group, tex=tmp)
+				(didApply, tmp, totals) = self._applyGroup(data[group], group, totals, tex=tmp)
 				didApplyGroup = didApplyGroup or didApply
 			
-			# Global accumulates
-			didApplyGlobal = False
-			#(didApplyGlobal, tmp) = self._applyGlobal(data['global'], tex=tmp)
-			
 			# If you did apply anythng store it otherwise we are done
-			if didApplyGlobal or didApplyGroup:
-				 res += tmp
+			if didApplyGroup:
+				# Apply listing accumulates
+				subtotal = totals['subtotal']
+				vat = totals['vat']
+				
+				tmp = self.applyField('subtotal', '%.2f' % subtotal, tmp)
+				tmp = self.applyField('total', '%.2f' % (subtotal + vat), tmp)
+				tmp = self.applyField('vatPercentage', '%.2f\\%%' % ((vat/subtotal) * 100) if not (vat == 0) else '0\\%', tmp)
+				tmp = self.applyField('vat', '%.2f' % vat, tmp)
+				
+				res += tmp
 			else:
 				break
 		
@@ -102,20 +110,37 @@ class Template:
 				value = FUNCTIONS[func](key, str(value))
 		return tex.replace('\\' + key, str(value))
 		
-	def _applyGroup(self, data, group, tex=None):
+	def _applyGroup(self, data, group, totals, tex=None):
 		'''
 		Apply a single entry for the given group in the template.
 		Return True when an entry is applied, False otherwise.
 		'''
+		def addTotals(totals, data, keys):
+			'''
+			Add the totals of the given data to the totals dictionary
+			'''
+			keys = map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), keys)
+			if all(e is None for e in keys):
+				return totals
+				
+			units = float(data[keys.index('unit')]) if 'unit' in keys else 1
+			subtotal = units * float(data[keys.index('unitPrice')])
+			vat = subtotal * (float(data[keys.index('vat')]) / 100)
+			
+			totals['subtotal'] += subtotal
+			totals['vat'] += vat
+			
+			return totals
+			
 		if tex is None:
 			tex = self.tex
 		finger = 0		
 		row = None
 		
-		#print(group, data, self._findSection(group, tex=tex))
 		# Do not pop the data when it is not needed
 		if (not len(data['data']) is 0) and (lambda x, y: not x[0] is -1)(*self._findSection(group, tex=tex)):
 			row = data['data'].pop(0)
+			totals = addTotals(totals, row, data['keys'])
 		
 		# Change all the groups
 		changed = False
@@ -140,7 +165,7 @@ class Template:
 				result = self.applyField(key, value, result)
 			tex = tex[:start[0]] + result + tex[end[0]+end[1]:]
 		
-		return (changed, tex)
+		return (changed, tex, totals)
 
 	def applyGlobalAccumulatives(self, data):
 		'''
@@ -148,7 +173,7 @@ class Template:
 		'''
 		groupData = data['groups']
 		for group in groupData:
-			self._tex = self._applyGroup(groupData[group], group)[1]
+			self._tex = self._applyGroup(groupData[group], group, {})[1]
 		
 		globalData = data['global']
 		for field in reversed(sorted(globalData['keys'])):
