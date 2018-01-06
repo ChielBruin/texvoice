@@ -67,8 +67,17 @@ class Template:
 		Returns the result and the data that couldn't be applied.
 		'''
 		res = ''
-		while True:
-			(didApplyGroup, tmp, totals) = (False, self.tex[ (start[0] + start[1]) : (end[0]) ], {'subtotal':0, 'vat':0})
+		strt = start[0] + start[1]
+		if self.tex[strt] == '[':
+			nd = self._tex.find(']', strt)
+			runs = int(self._tex[strt+1:nd])
+			self._tex = self._tex[:strt] + (nd+1 - strt) * ' ' + self._tex[nd+1:]	# Overwrite with spaces to not break the start and end indices
+		else:
+			runs = -1
+			
+		while runs is -1 or runs > 0:
+			runs = max(-1, runs-1)
+			(didApplyGroup, tmp, totals) = (False, self._tex[ (start[0] + start[1]) : (end[0]) ], {'subtotal':0, 'vat':0})
 			# For each group
 			for group in data:
 				if group == 'accumulated':
