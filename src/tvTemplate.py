@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import division
+import copy
 
 
 class Template:
@@ -28,12 +29,16 @@ class Template:
 		Get the multiTable from the template
 		'''
 		if self._multiTable is None:
-			(start, end) = self._findSection('texvoicePage')
-			if start[0] is -1:
-				self._multiTable = ''
-			else:
-				self._multiTable = self._tex[start[0]+start[1]:end[0]]
-				self._tex = self._tex[:start[0]+start[1]] + self._tex[end[0]:]
+			self._multiTable = []
+			finger = 0
+			while True:
+				(start, end) = self._findSection('texvoicePage', beg=finger)
+				if start[0] is -1:
+					break
+				else:
+					self._multiTable.append(self._tex[start[0]+start[1]:end[0]])
+					self._tex = self._tex[:start[0]+start[1]] + self._tex[end[0]:]
+					finger = start[0] + start[1]	# Do not use end here as this is in the moved indices
 		return self._multiTable
 		
 	@property
@@ -68,22 +73,29 @@ class Template:
 				
 	def _applyMultiTable(self, data):
 		'''
-		Apply the multiTable
+		Apply all the multiTables
 		'''
-		if self.multiTable == '':
-			return
+		for page in self._multiTable:
+			res = ''
+			dataCopy = copy.deepcopy(data)	# There is probably a better way to do this
 			
-		res = ''
-		
-		# Apply all listings until there is no more data
-		while True:
-			(data, tex) = self.applyListings(data, applyMultiTable=False, tex=self._multiTable)
-			res += tex
-			if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
-				break
-		
-		(start, end) = self._findSection('texvoicePage')
-		self._tex = self._tex[:start[0]] + res + self._tex[end[0]+end[1]:]
+			# Apply all listings until there is no more data
+			while True:
+				(data, tex) = self.applyListings(data, applyMultiTable=False, tex=page)
+				
+				# If nothing is applied
+				if(dataCopy == data):
+					break
+				else:
+					dataCopy = copy.deepcopy(data)
+				res += tex
+				
+				# Nothing more can be applied
+				if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
+					break
+			
+			(start, end) = self._findSection('texvoicePage')
+			self._tex = self._tex[:start[0]] + res + self._tex[end[0]+end[1]:]
 			
 	def _findSection(self, name, beg=0, tex=None):
 		'''
