@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from __future__ import division
 
-import json
 
 class Template:
 	def __init__(self, templateFile):
 		self.templateFile = templateFile
 		self._tex = None
+		self._multiTable = None
 		self._version = None
 		self._requiredFields = None
 		self._data = {}
@@ -19,7 +19,22 @@ class Template:
 		if self._tex is None:
 			with open(self.templateFile, 'r') as f:
 				self._tex = f.read()
+			self.multiTable	# Force parsing the multiTable
 		return self._tex
+		
+	@property
+	def multiTable(self):
+		'''
+		Get the multiTable from the template
+		'''
+		if self._multiTable is None:
+			(start, end) = self._findSection('texvoicePage')
+			if start[0] is -1:
+				self._multiTable = ''
+			else:
+				self._multiTable = self._tex[start[0]+start[1]:end[0]]
+				self._tex = self._tex[:start[0]+start[1]] + self._tex[end[0]:]
+		return self._multiTable
 		
 	@property
 	def requiredFields(self):
@@ -33,16 +48,43 @@ class Template:
 			]
 		return self._requiredFields
 
-	def applyListings(self, data):
+	def applyListings(self, data, applyMultiTable=True, tex=None):
 		'''
 		Apply all listings.
 		'''
+		if tex is None:
+			tex = self.tex
+			
 		while True:
-			(start, end) = self._findSection('texvoiceListing')
+			(start, end) = self._findSection('texvoiceListing', tex=tex)
 			if start[0] is -1:
 				break
-			data = self._applyListing(start, end, data)
+			data, tex = self._applyListing(start, end, data, tex)
 		
+		if applyMultiTable:
+			self._tex = tex
+			self._applyMultiTable(data)
+		return data, tex
+				
+	def _applyMultiTable(self, data):
+		'''
+		Apply the multiTable
+		'''
+		if self.multiTable == '':
+			return
+			
+		res = ''
+		
+		# Apply all listings until there is no more data
+		while True:
+			(data, tex) = self.applyListings(data, applyMultiTable=False, tex=self._multiTable)
+			res += tex
+			if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
+				break
+		
+		(start, end) = self._findSection('texvoicePage')
+		self._tex = self._tex[:start[0]] + res + self._tex[end[0]+end[1]:]
+			
 	def _findSection(self, name, beg=0, tex=None):
 		'''
 		Find a section with a given name in the input.
@@ -61,23 +103,23 @@ class Template:
 			raise Exception('Cannot find closing tag for %s' % name)
 		return ((start, len(startStr)), (end, len(endStr)))
 
-	def _applyListing(self, start, end, data):
+	def _applyListing(self, start, end, data, tex):
 		'''
 		Apply as much of the data as is possible in the given range.
 		Returns the result and the data that couldn't be applied.
 		'''
 		res = ''
 		strt = start[0] + start[1]
-		if self.tex[strt] == '[':
-			nd = self._tex.find(']', strt)
-			runs = int(self._tex[strt+1:nd])
-			self._tex = self._tex[:strt] + (nd+1 - strt) * ' ' + self._tex[nd+1:]	# Overwrite with spaces to not break the start and end indices
+		if tex[strt] == '[':
+			nd = tex.find(']', strt)
+			runs = int(tex[strt+1:nd])
+			tex = tex[:strt] + (nd+1 - strt) * ' ' + tex[nd+1:]	# Overwrite with spaces to not break the start and end indices
 		else:
 			runs = -1
 			
 		while runs is -1 or runs > 0:
 			runs = max(-1, runs-1)
-			(didApplyGroup, tmp, totals) = (False, self._tex[ (start[0] + start[1]) : (end[0]) ], {'subtotal':0, 'vat':0})
+			(didApplyGroup, tmp, totals) = (False, tex[ (start[0] + start[1]) : (end[0]) ], {'subtotal':0, 'vat':0})
 			# For each group
 			for group in data:
 				if group == 'accumulated':
@@ -100,8 +142,8 @@ class Template:
 			else:
 				break
 		
-		self._tex = self._tex[:start[0]] + res + self._tex[end[0] + end[1]:]
-		return data
+		tex = tex[:start[0]] + res + tex[end[0] + end[1]:]
+		return data, tex
 		
 	def applyField(self, key, value, tex):
 		'''

@@ -2,21 +2,29 @@
 
 \begin{document}
   a
-  \begin{texvoiceListing}
+  \begin{texvoiceListing}[1]
    Hello world!
-   \begin{tasks}
-    \description - \duration - \wage
-   \end{tasks}
+   \begin{hours}
+    hours: \description - \duration - \wage = \total
+   \end{hours}
    \begin{expenses}
-   \description \price
+    \description \price = \total
    \end{expenses}
-  \end{texvoiceListing}
-  b
-  \begin{texvoiceListing}
-   Hello world!
-   \begin{travel}
-    \from - \to
-   \end{travel}
+   \total
   \end{texvoiceListing}
   c
+  \total
+  
+  \begin{texvoicePage}
+   table!!!\\
+   \begin{texvoiceListing}[2]
+    Hello world!
+    \begin{travel}
+     \from - \to
+    \end{travel}
+    \begin{hours}
+     hours: \description - \duration - \wage = \total
+    \end{hours}
+   \end{texvoiceListing}
+  \end{texvoicePage}
 \end{document}
