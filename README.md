@@ -120,13 +120,11 @@ Throughout the entire document some other keywords related to the invoice are su
    - [ ] Rework the CLI interface
    
  - An improved compiler
-   - [X] Move to the usage of the Texcaller module
-   - [ ] Keep it working in Python 3
    - [X] Make the compiler more modular
    - [X] Change the data imput format
    - [X] Try to stay comliant with the compiler2
    - [X] Add maximum length for a listing
-   - [X] Add multipage listing
+   - [X] Add listing pages
    
  - Update data loading
    - [X] Improve the loader to a new output format
