@@ -116,7 +116,7 @@ def parseConfigLine(line):
 	FUNCTIONS = {
 		'FACTOR2PERCENTAGE' : lambda x, arg: (float(x)-1) * 100,	# Make a percentage from a factor (multiplier)
 		'TIMESTAMP' : lambda x, arg: 								# Parse a duration timestamp to a float
-				(lambda time: float(time[0] + time[1] / float(60)))(map(lambda v: int(v), x.split(':'))),
+				(lambda time: float(time[0] + time[1] / float(60)))(list(map(lambda v: int(v), x.split(':')))),
 		'DECIMALCOMMA' : lambda x, arg: x.replace(',', '.'),		# Replace the comma to a dot in the decimal notation
 		'DEFAULT' : lambda x, arg: arg if x is '' else x,			# When empty insert the default value
 		'EMPTY' : lambda x, arg: '' if x is arg else x				# If equal to the argument make it empty

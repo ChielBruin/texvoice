@@ -1,6 +1,4 @@
-from __future__ import division
-
-import texcaller
+import shutil, os, subprocess
 import tvTemplate
 
 
@@ -24,18 +22,43 @@ def convert(inputData):
 	template.applyGlobalAccumulatives(data['accumulated'])
 	template.applyGlobalFields(inputData['global'])
 	
-	return template.tex
+	return template
 
-def compile(latex, options):
+def compile(template, options):
 	'''
 	Compile the given .tex input to PDF and store the result in the given file location
 	'''
-	pdf, info = texcaller.convert(latex, 'LaTeX', 'PDF', 5)
-
-	with open(options['resultFile'], 'w') as f:
-		f.write(pdf)
+	wd = '.tmp'
 	
-	return (not (pdf is []), info)
+	# Make tmp folder
+	if not os.path.exists(wd):
+		os.makedirs(wd)
+	wd += '/'
+	
+	# Write the needed files
+	template.export(wd)
+	
+	# Compile to PDF
+	result = (False, '')
+	try:
+		output = subprocess.check_output(['pdflatex', '-interaction=nonstopmode', 'result.tex'], stderr=subprocess.STDOUT, cwd=wd)
+		result = (True, output.decode("utf-8"))
+	except subprocess.CalledProcessError as e:
+		output = e.output.decode("utf-8")
+		result = (False, output)
+	
+	# Get the output files
+	files = ['result.pdf']
+	if options['keepSource']:
+		files.append('result.tex')
+		
+	for f in files:
+		os.rename(wd + f, f)
+	
+	# Remove the tmp folder
+	shutil.rmtree(wd)
+	
+	return result
 	
 def checkTemplateVersion(version):
 	'''
@@ -47,7 +70,7 @@ def priceToString(price):
 	'''
 	Convert a price to a string representation.
 	'''
-	return '%.2f'%price
+	return '€%.2f'%price
 	
 def generateAccumulatives(data):
 	'''
@@ -62,7 +85,7 @@ def generateAccumulatives(data):
 	
 	# Accumulate each group separately
 	for group in data:
-		keys = map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), data[group]['keys'])
+		keys = list(map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), data[group]['keys']))
 		
 		# If nothing should be accumilated, continue
 		if all(e is None for e in keys):

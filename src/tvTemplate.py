@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-from __future__ import division
 import copy
 
 
@@ -53,6 +51,13 @@ class Template:
 			]
 		return self._requiredFields
 
+	def export(self, location):
+		'''
+		Export the template to the given location, so that it can be compiled.
+		'''
+		with open(location + 'result.tex', 'w') as f:
+			f.write(self.tex)
+	
 	def applyListings(self, data, applyMultiTable=True, tex=None):
 		'''
 		Apply all listings.
@@ -88,7 +93,7 @@ class Template:
 					break
 				else:
 					dataCopy = copy.deepcopy(data)
-				res += tex
+				res += '\clearpage\n' + tex
 				
 				# Nothing more can be applied
 				if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
@@ -145,10 +150,10 @@ class Template:
 				subtotal = totals['subtotal']
 				vat = totals['vat']
 				
-				tmp = self.applyField('subtotal', '%.2f' % subtotal, tmp)
-				tmp = self.applyField('total', '%.2f' % (subtotal + vat), tmp)
+				tmp = self.applyField('subtotal', '€%.2f' % subtotal, tmp)
+				tmp = self.applyField('total', '€%.2f' % (subtotal + vat), tmp)
 				tmp = self.applyField('vatPercentage', '%.2f\\%%' % ((vat/subtotal) * 100) if not (vat == 0) else '0\\%', tmp)
-				tmp = self.applyField('vat', '%.2f' % vat, tmp)
+				tmp = self.applyField('vat', '€%.2f' % vat, tmp)
 				
 				res += tmp
 			else:
@@ -162,8 +167,8 @@ class Template:
 		Apply all the fields with the given name to get the given value.
 		'''
 		FUNCTIONS = {
-			'vat': lambda key, val: str(val)+'\\%',
-			'unitPrice': lambda key, val: '%.2f'%float(val),
+			'vat': lambda key, val: '%.2f\\%%' % float(val),
+			'unitPrice': lambda key, val: '€%.2f' % float(val),
 			'unit': lambda key, val: str(val) if not (key == 'duration') else (lambda v: str(int(v)) + ':' + '%02d' % (int((v%1)*60))) (float(val))
 		}
 		if '(' in key:
@@ -182,7 +187,7 @@ class Template:
 			'''
 			Add the totals of the given data to the totals dictionary
 			'''
-			keys = map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), keys)
+			keys = list(map((lambda x: None if not '(' in x else (lambda a, b: b[:-1]) (*x.split('('))), keys))
 			if all(e is None for e in keys):
 				return totals
 				
