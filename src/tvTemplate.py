@@ -34,6 +34,13 @@ class Template:
 				if start[0] is -1:
 					break
 				else:
+					# Leave the argument in place if it exists
+					if self._tex[start[0]+start[1]] == '[':
+						idx = self._tex.find(']', start[0]+start[1]+1)
+						if idx is -1:
+							raise Exception('Unmatched brackets')
+						start = (start[0], idx - start[0] + 1)
+					
 					self._multiTable.append(self._tex[start[0]+start[1]:end[0]])
 					self._tex = self._tex[:start[0]+start[1]] + self._tex[end[0]:]
 					finger = start[0] + start[1]	# Do not use end here as this is in the moved indices
@@ -84,6 +91,13 @@ class Template:
 			res = ''
 			dataCopy = copy.deepcopy(data)	# There is probably a better way to do this
 			
+			# Check if we need to prefix anything, and if so apply
+			fix = ''
+			(start, end) = self._findSection('texvoicePage')
+			idx = start[0]+start[1]
+			if self._tex[idx] == '[':
+				fix = self._tex[idx + 1: self._tex.find(']', idx)] + '\n'
+				
 			# Apply all listings until there is no more data
 			while True:
 				(data, tex) = self.applyListings(data, applyMultiTable=False, tex=page)
@@ -93,13 +107,13 @@ class Template:
 					break
 				else:
 					dataCopy = copy.deepcopy(data)
-				res += '\clearpage\n' + tex
+				
+				res += fix + tex
 				
 				# Nothing more can be applied
 				if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
 					break
-			
-			(start, end) = self._findSection('texvoicePage')
+				
 			self._tex = self._tex[:start[0]] + res + self._tex[end[0]+end[1]:]
 			
 	def _findSection(self, name, beg=0, tex=None):
