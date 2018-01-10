@@ -113,7 +113,7 @@ Throughout the entire document some other keywords related to the invoice are su
    - [X] Views that show the data and allow for modifications
    - [X] A list of configurable options
    - [X] Template selection
-   - [ ] Template previews
+   - [X] Template previews
    - [X] A compile button
    - [X] Display compile feedback
    - [X] Possibility to import data exports
