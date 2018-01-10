@@ -131,12 +131,12 @@ Throughout the entire document some other keywords related to the invoice are su
    - [X] General refactoring
    
  - Update the template format
-   - [ ] Change the preview to an image
-   - [ ] Change the version file to include more data
-   - [ ] Add author/copyright fields
-   - [ ] Add a description
-   - [ ] Allow for custom fields
-   - [ ] Add required tag data to check compatibility when compiling
+   - [X] Change the preview to an image
+   - [X] Change the version file to include more data
+   - [X] Add author/copyright fields
+   - [X] Add a description
+   - [X] Allow for custom fields
+   - [X] Add required tag data to check compatibility when compiling
  
  The current tool will remain working until the work finishes on V2.0. This newer version will then replace the original tool. Check the `texvoice2` branch for the progress being made.
  
