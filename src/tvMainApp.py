@@ -24,6 +24,9 @@ class MainApp:
 		self.roots = self._drawSetup(root)
 	
 	def _drawSetup(self, root):
+		'''
+		Setup the layout of the app.
+		'''
 		# Top panel
 		menuView = view.MenuView(root)
 		menuView.pack(fill=X, pady=10, padx=5)
@@ -55,7 +58,6 @@ class MainApp:
 		globalView = view.OptionView(root)
 		globalView.pack(fill=X, side=BOTTOM, pady=10)
 		
-			
 		return {
 			'main': root,
 			'templateView': templateView,
@@ -85,24 +87,37 @@ class MainApp:
 		])
 		self.roots['main'].mainloop()
 			
-	def drawMenu(self):		
+	def drawMenu(self):	
+		'''
+		Add all the menu buttons to the menu.
+		'''	
 		def btn_templateSelect():
+			'''
+			Prompt the user to select the template and load this template.
+			'''
 			file = filedialog.askopenfilename(title = 'choose your template',filetypes = (('texvoice templates','*.zip'),('all files','*.*')))
 			if file:
 				try:
 					self.template = TemplateData(file)
 					self.roots['templateView'].setTemplate(self.template)
+					
+					# Display empty tables when needed
 					dataView = self.roots['dataView']
 					requiredData = self.template.getProperty('requiredGroups')
 					data = {}
 					for group in requiredData:
 						data[group] = {'keys': requiredData[group], 'data': []}
 					dataView.setData(data)
+					
+					# Set the required options
 					self.roots["globalView"].setOptions(self.template.getProperty('requiredFields'))
 				except Exception as e:
 					messagebox.showerror('Error loading template', e)
 		
 		def btn_dataSelect():
+			'''
+			Prompt the user for a data file to load and display the loaded data.
+			'''
 			file = filedialog.askopenfilename(title = 'choose your input data', filetypes=tvDataLoader.acceptedFiles())
 			if file:
 				try:
@@ -114,16 +129,19 @@ class MainApp:
 				except Exception as e:
 					messagebox.showerror('Loading data failed', e)
 		
-		def btn_compile(result, info):
+		def btn_compile():
+			'''
+			Compile and process the results.
+			'''
+			(result, info) = self.onCompile()
 			if result:
 				messagebox.showinfo('Compilation successful', 'The document successfully compiled')
 			else:
 				messagebox.showerror('Compilation failed', info)
 		
 		# Add keybindings
-		compileLambda = lambda:btn_compile(*self.onCompile())
 		root = self.roots['main']
-		root.bind("<Control-c>", lambda e: compileLambda())
+		root.bind("<Control-c>", lambda e: btn_compile())
 		root.bind("<Control-d>", lambda e: btn_dataSelect())
 		root.bind("<Control-t>", lambda e: btn_templateSelect())
 		
@@ -131,7 +149,7 @@ class MainApp:
 		menu = self.roots['menuView']
 		menu.addButton("Select template", command=btn_templateSelect)
 		menu.addButton("Select input data", command=btn_dataSelect)
-		menu.addButton("Compile", side=RIGHT, command=compileLambda)
+		menu.addButton("Compile", side=RIGHT, command=btn_compile)
 		
 	def onCompile(self):
 		'''
