@@ -33,7 +33,7 @@ class TemplateView (FrameView):
 		Update the displayed template.
 		'''
 		self.template = template
-		self._clean()
+		self._clear()
 			
 		# Preview icon	
 		Label(self, image=template.img).pack(pady=10)
