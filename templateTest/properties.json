@@ -3,7 +3,7 @@
   "name": "testTemplate",
   "description": "A template I will be using for testing purposes. The template contains almost all features supported by the compiler, making it act as some form of benchmark.",
   "author": "Chiel Bruin",
-  "licence": "N/A (yet)",
+  "license": "N/A (yet)",
   "extraData": [
     {
       "name": "abba", "content": "Some text that goes here if you like"

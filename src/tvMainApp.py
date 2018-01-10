@@ -26,35 +26,35 @@ class MainApp:
 	
 	def _drawSetup(self, root):
 		# Top panel
-		menuView = view.MenuView(root, background='#00FF77')
-		menuView.pack(fill=X)
+		menuView = view.MenuView(root)
+		menuView.pack(fill=X, pady=10, padx=5)
 		
 		# Middle panel
 		container = Frame(root)
-		container.pack(fill=BOTH, expand=True)
+		container.pack(fill=BOTH, expand=True, pady=10)
 		
 		dataCanvas = Canvas(container)
 		dataCanvas.pack(side=LEFT, fill=BOTH, expand=True)
-		dataView = view.DataView(dataCanvas, background='#0000FF')
-		dataView.pack(fill=BOTH)
+		dataView = view.DataView(dataCanvas)
+		dataView.pack(fill=BOTH, padx=10, pady=10)
 		
-		sb = Scrollbar(container,orient="vertical", command=dataCanvas.yview)
+		sb = Scrollbar(container, orient="vertical", command=dataCanvas.yview)
 		sb.pack(side=LEFT, fill=Y)
 		dataCanvas.configure(yscrollcommand=sb.set)
 		
-		templateView = view.TemplateView(container, None, background='#FF0077')
-		templateView.pack(side=RIGHT, fill=BOTH, expand=True)
+		templateView = view.TemplateView(container, None)
+		templateView.pack(side=RIGHT, fill=Y)
 		
 		# Bottom panel
 		bottomView = Frame(root)
 		bottomView.pack(side=BOTTOM, fill=X)
 		Label(bottomView, text='Texvoice© Chiel Bruin').pack(side=RIGHT)
 			
-		optionView = view.OptionView(root, background='#55FF77')
-		optionView.pack(fill=X, side=BOTTOM)
+		optionView = view.OptionView(root)
+		optionView.pack(fill=X, side=BOTTOM, pady=10)
 		
-		globalView = view.OptionView(root, background='#55FFFF')
-		globalView.pack(fill=X, side=BOTTOM)
+		globalView = view.OptionView(root)
+		globalView.pack(fill=X, side=BOTTOM, pady=10)
 		
 			
 		return {

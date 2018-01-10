@@ -50,6 +50,8 @@ class TKEditTable (Frame):
 		'''
 		if (len(row) != self.width):
 			raise Exception("Size mismatch")
+		if (len(row) is 0):
+			return
 		
 		for i in range(len(row)):
 			entry = Entry(self)
