@@ -1,5 +1,5 @@
 from tkEditTable import TKEditTable
-from tvTemplate import Template
+from tvTemplateData import TemplateData
 
 import tvDataLoader
 import tvCompiler
@@ -23,8 +23,8 @@ class MainApp:
 		'''
 		Draw all the graphic elements and start the main loop
 		'''
-		self.loadTemplate(options['template'])
-		fields = self.template.requiredFields
+		self.loadTemplate(options['template'][1])
+		fields = self.template.getProperty('requiredFields')
 		
 		self.loadData(options['inputFile'][1], 'csv', {'configFile': 'csvConfigs/Timesheet_NL.conf'})
 			
@@ -39,7 +39,7 @@ class MainApp:
 		self.root.mainloop()
 	
 	def loadTemplate(self, templateFile):
-		self.template = Template(templateFile)
+		self.template = TemplateData(templateFile)
 		
 	def drawTable(self, root, data):
 		'''
@@ -93,7 +93,9 @@ class MainApp:
 		frame.grid()
 		fieldValues = {}
 		
-		for i, (key, info) in enumerate(fields):
+		for i, obj in enumerate(fields):
+			key = obj['name']
+			info = obj['desc']
 			container = Frame(frame)
 			container.grid(column=i%maxOptions, row=i//maxOptions)
 			l = lambda: messagebox.showinfo(key, info)		# TODO: fix this button

@@ -1,62 +1,45 @@
 import copy
+import zipfile
 
 
 class Template:
 	def __init__(self, templateFile):
-		self.templateFile = templateFile
-		self._tex = None
-		self._multiTable = None
-		self._version = None
-		self._requiredFields = None
-		self._data = {}
+		if not zipfile.is_zipfile(templateFile):
+			raise Exception(templateFile + ' is not a .zip file')
 			
-	@property
-	def tex(self):
-		'''
-		Get the actual template file and cache the result
-		'''
-		if self._tex is None:
-			with open(self.templateFile, 'r') as f:
-				self._tex = f.read()
-			self.multiTable	# Force parsing the multiTable
-		return self._tex
+		self.templateFile = templateFile
 		
-	@property
-	def multiTable(self):
+		with zipfile.ZipFile(templateFile, "r") as zf:
+			templateTexFile = 'template.tex'
+			
+			if not templateTexFile in zf.namelist():
+				raise Exception('Malformed template')
+			with zf.open(templateTexFile) as texFile:
+				self.tex = texFile.read().decode('UTF-8')
+		self.multiTable = self._buildMultiTable()
+		
+	def _buildMultiTable(self):
 		'''
 		Get the multiTable from the template
 		'''
-		if self._multiTable is None:
-			self._multiTable = []
-			finger = 0
-			while True:
-				(start, end) = self._findSection('texvoicePage', beg=finger)
-				if start[0] is -1:
-					break
-				else:
-					# Leave the argument in place if it exists
-					if self._tex[start[0]+start[1]] == '[':
-						idx = self._tex.find(']', start[0]+start[1]+1)
-						if idx is -1:
-							raise Exception('Unmatched brackets')
-						start = (start[0], idx - start[0] + 1)
-					
-					self._multiTable.append(self._tex[start[0]+start[1]:end[0]])
-					self._tex = self._tex[:start[0]+start[1]] + self._tex[end[0]:]
-					finger = start[0] + start[1]	# Do not use end here as this is in the moved indices
-		return self._multiTable
-		
-	@property
-	def requiredFields(self):
-		'''
-		Get the required fields and cache the result
-		'''
-		if self._requiredFields is None:
-			self._requiredFields = [
-				('invoiceID', 'The ID of this invoice'),
-				('projectID', 'The ID of this project')
-			]
-		return self._requiredFields
+		multiTable = []
+		finger = 0
+		while True:
+			(start, end) = self._findSection('texvoicePage', beg=finger)
+			if start[0] is -1:
+				break
+			else:
+				# Leave the argument in place if it exists
+				if self.tex[start[0]+start[1]] == '[':
+					idx = self.tex.find(']', start[0]+start[1]+1)
+					if idx is -1:
+						raise Exception('Unmatched brackets')
+					start = (start[0], idx - start[0] + 1)
+				
+				multiTable.append(self.tex[start[0]+start[1]:end[0]])
+				self.tex = self.tex[:start[0]+start[1]] + self.tex[end[0]:]
+				finger = start[0] + start[1]	# Do not use end here as this is in the moved indices
+		return multiTable
 
 	def export(self, location):
 		'''
@@ -64,6 +47,12 @@ class Template:
 		'''
 		with open(location + 'result.tex', 'w') as f:
 			f.write(self.tex)
+			
+		with zipfile.ZipFile(self.templateFile, "r") as zf:			
+			includeFolder = 'include/'
+			if includeFolder in zf.namelist():
+				zf.extract(includeFolder, location)
+				
 	
 	def applyListings(self, data, applyMultiTable=True, tex=None):
 		'''
@@ -79,7 +68,7 @@ class Template:
 			data, tex = self._applyListing(start, end, data, tex)
 		
 		if applyMultiTable:
-			self._tex = tex
+			self.tex = tex
 			self._applyMultiTable(data)
 		return data, tex
 				
@@ -87,7 +76,7 @@ class Template:
 		'''
 		Apply all the multiTables
 		'''
-		for page in self._multiTable:
+		for page in self.multiTable:
 			res = ''
 			dataCopy = copy.deepcopy(data)	# There is probably a better way to do this
 			
@@ -95,8 +84,8 @@ class Template:
 			fix = ''
 			(start, end) = self._findSection('texvoicePage')
 			idx = start[0]+start[1]
-			if self._tex[idx] == '[':
-				fix = self._tex[idx + 1: self._tex.find(']', idx)] + '\n'
+			if self.tex[idx] == '[':
+				fix = self.tex[idx + 1: self.tex.find(']', idx)] + '\n'
 				
 			# Apply all listings until there is no more data
 			while True:
@@ -114,7 +103,7 @@ class Template:
 				if all(key == 'accumulated' or len(data[key]['data']) is 0 for key in data):
 					break
 				
-			self._tex = self._tex[:start[0]] + res + self._tex[end[0]+end[1]:]
+			self.tex = self.tex[:start[0]] + res + self.tex[end[0]+end[1]:]
 			
 	def _findSection(self, name, beg=0, tex=None):
 		'''
@@ -255,16 +244,16 @@ class Template:
 		'''
 		groupData = data['groups']
 		for group in groupData:
-			self._tex = self._applyGroup(groupData[group], group, {})[1]
+			self.tex = self._applyGroup(groupData[group], group, {})[1]
 		
 		globalData = data['global']
 		for field in reversed(sorted(globalData['keys'])):
 			value = globalData['data'][0][globalData['keys'].index(field)]
-			self._tex = self.applyField(field, value, self._tex)
+			self.tex = self.applyField(field, value, self.tex)
 
 	def applyGlobalFields(self, options):
 		'''
 		Apply all the options to the input.
 		'''
 		for field, value in options.items():
-			self._tex = self.applyField(field, str(value), self._tex)
+			self.tex = self.applyField(field, str(value), self.tex)

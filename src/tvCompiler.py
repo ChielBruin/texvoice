@@ -1,13 +1,7 @@
 import shutil, os, subprocess
-import tvTemplate
+from tvTemplate import Template
 
 
-def loadTemplate(templateFile):
-	'''
-	Load the specified template file from disk.
-	'''
-	return tvTemplate.Template(templateFile)
-	
 def convert(inputData):
 	'''
 	Convert the template and the data to a .tex file that can be compiled
@@ -16,7 +10,7 @@ def convert(inputData):
 	data = inputData['data']
 	generateAccumulatives(data)
 	
-	template = loadTemplate(options['template'])
+	template = Template(options['template'])
 	
 	template.applyListings(data)
 	template.applyGlobalAccumulatives(data['accumulated'])

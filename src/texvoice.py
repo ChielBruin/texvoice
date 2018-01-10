@@ -17,7 +17,7 @@ def getOptions(args):
 	options['keepSource'] = ('Keep the compiled text sources', args.keepSource)
 	options['resultFile'] = ('The file location where to store the result', args.output)
 	options['inputFile']  = ('The file location where to load the data from', args.input)
-	options['template']   = ('The template to use when compiling', 'testTemplate.tex')
+	options['template']   = ('The template to use when compiling', 'templateTest.zip')
 
 	return options
 
