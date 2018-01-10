@@ -22,7 +22,7 @@
   ],
   "requiredGroups": {
 	"hours":  ["description", "vatPercentage(vat)", "duration(unit)", "wage(unitPrice)"],
-	"expenses": ["description", "duration(unit)", "vatPercentage(vat)"],
+	"expenses": ["description", "price(unitPrice)", "vatPercentage(vat)"],
 	"travel" : ["description", "price(unitPrice)", "distance(unit)", "vatPercentage(vat)", "from", "to"]
   }
 }

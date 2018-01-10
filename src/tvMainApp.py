@@ -17,10 +17,9 @@ class MainApp:
 		root.title('Texvoice (V2 development build)')
 		
 		# make it cover the entire screen
-		root.geometry("%dx%d+0+0" % (root.winfo_screenwidth(), root.winfo_screenheight()))
-		
+		root.geometry('%dx%d+0+0' % (root.winfo_screenwidth(), root.winfo_screenheight()))
 		root.focus_set()
-		root.bind("<Escape>", lambda e: e.widget.quit())
+		root.bind('<Escape>', lambda e: e.widget.quit())
 		
 		self.roots = self._drawSetup(root)
 	
@@ -121,24 +120,35 @@ class MainApp:
 			else:
 				messagebox.showerror('Compilation failed', info)
 		
+		# Add keybindings
+		compileLambda = lambda:btn_compile(*self.onCompile())
+		root = self.roots['main']
+		root.bind("<Control-c>", lambda e: compileLambda())
+		root.bind("<Control-d>", lambda e: btn_dataSelect())
+		root.bind("<Control-t>", lambda e: btn_templateSelect())
+		
 		# Add buttons
 		menu = self.roots['menuView']
 		menu.addButton("Select template", command=btn_templateSelect)
 		menu.addButton("Select input data", command=btn_dataSelect)
-		menu.addButton("Compile", side=RIGHT, command=lambda:btn_compile(*self.onCompile()))
+		menu.addButton("Compile", side=RIGHT, command=compileLambda)
 		
 	def onCompile(self):
 		'''
 		Gather all the needed data and comile the invoice
 		'''
-		compileData = {}
-		compileData['data']    = self.roots['dataView'].getData()
-		compileData['options'] = self.roots['optionView'].getData()
-		compileData['global']  = self.roots['globalView'].getData()
-		
-		compileData['options']['template'] = self.roots['templateView'].template.templateFile
-				
+		template = self.roots['templateView'].template
+		if not template:
+			return (False, 'No template selected')
+			
 		try:
+			compileData = {}
+			compileData['data']    = self.roots['dataView'].getData()
+			compileData['options'] = self.roots['optionView'].getData()
+			compileData['global']  = self.roots['globalView'].getData()
+			
+			compileData['options']['template'] = template.templateFile
+			
 			tex = tvCompiler.convert(compileData)
 			return tvCompiler.compile(tex, compileData['options'])
 		except Exception as e:
