@@ -16,7 +16,7 @@ class MainApp:
 		root = Tk()
 		root.title('Texvoice (V2 development build)')
 		
-		# make it cover the entire screen
+		# Make it cover the entire screen
 		root.geometry('%dx%d+0+0' % (root.winfo_screenwidth(), root.winfo_screenheight()))
 		root.focus_set()
 		root.bind('<Escape>', lambda e: e.widget.quit())
@@ -158,6 +158,9 @@ class MainApp:
 		template = self.roots['templateView'].template
 		if not template:
 			return (False, 'No template selected')
+		
+		if not tvCompiler.checkTemplateVersion(template.getProperty('compilerVersion')):
+			return (False, 'The selected template is not compatible with the current compiler')			
 			
 		try:
 			compileData = {}
