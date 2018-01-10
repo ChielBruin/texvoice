@@ -112,11 +112,11 @@ Throughout the entire document some other keywords related to the invoice are su
  - A proper GUI instead of the CLI interface
    - [X] Views that show the data and allow for modifications
    - [X] A list of configurable options
-   - [ ] Template selection
+   - [X] Template selection
    - [ ] Template previews
    - [X] A compile button
-   - [ ] Display compile feedback
-   - [ ] Possibility to import data exports
+   - [X] Display compile feedback
+   - [X] Possibility to import data exports
    - [ ] Rework the CLI interface
    
  - An improved compiler
