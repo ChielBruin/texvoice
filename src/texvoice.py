@@ -43,4 +43,4 @@ if __name__ == '__main__':
 		if args.mode is 'load':
 			print('Load mode')
 	else :
-		MainApp().draw(options)
+		MainApp().draw()

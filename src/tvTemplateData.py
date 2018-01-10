@@ -5,6 +5,8 @@ from tkinter import *
 
 class TemplateData:
 	def __init__(self, templateFile):
+		self.templateFile = templateFile
+		
 		if not zipfile.is_zipfile(templateFile):
 			raise Exception(templateFile + ' is not a .zip file')
 			

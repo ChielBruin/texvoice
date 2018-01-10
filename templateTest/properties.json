@@ -19,5 +19,10 @@
     {
       "name": "projectID", "desc": "The id given to this project"
     }
-  ]
+  ],
+  "requiredGroups": {
+	"hours":  ["description", "vatPercentage(vat)", "duration(unit)", "wage(unitPrice)"],
+	"expenses": ["description", "duration(unit)", "vatPercentage(vat)"],
+	"travel" : ["description", "price(unitPrice)", "distance(unit)", "vatPercentage(vat)", "from", "to"]
+  }
 }
