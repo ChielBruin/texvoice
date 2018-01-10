@@ -1,4 +1,5 @@
 import copy
+import os, shutil
 import zipfile
 
 
@@ -44,14 +45,23 @@ class Template:
 	def export(self, location):
 		'''
 		Export the template to the given location, so that it can be compiled.
+		Make sure the given folder is empty, otherwise things could break.
 		'''
 		with open(location + 'result.tex', 'w') as f:
 			f.write(self.tex)
 			
-		with zipfile.ZipFile(self.templateFile, "r") as zf:			
-			includeFolder = 'include/'
-			if includeFolder in zf.namelist():
-				zf.extract(includeFolder, location)
+		# Extract the include folder
+		includeFolder = 'include/'
+		with zipfile.ZipFile(self.templateFile, "r") as zf:
+			for file in zf.namelist():
+				if file.startswith(includeFolder) and file != includeFolder:
+					fileName = file[len(includeFolder):]
+					zf.extract(file, location)
+					os.rename(location + file, location + file[len(includeFolder):])
+		
+		# Remove the include folder if it exists
+		if os.path.isdir(location + includeFolder):
+			shutil.rmtree(location + includeFolder)
 				
 	
 	def applyListings(self, data, applyMultiTable=True, tex=None):
