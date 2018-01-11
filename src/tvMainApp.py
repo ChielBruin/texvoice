@@ -8,6 +8,40 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 
+
+class ScrollFrame (Frame):
+	'''
+	A frame for which the contents are scrollable.
+	'''
+	def __init__(self, root, **args):
+		super(ScrollFrame, self).__init__(root, **args)
+		self.canvas = Canvas(self)
+		self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
+		
+		scrollbar = Scrollbar(self, command=self.canvas.yview)
+		scrollbar.pack(side=RIGHT, fill=Y)
+		
+		self.containedFrame = None
+
+		self.canvas.configure(yscrollcommand=scrollbar.set)
+		
+	def attach(self, frame):
+		'''
+		Attach a frame to make it scrollable.
+		'''
+		if self.containedFrame:
+			self.containedFrame.pack_forget()
+		frame.bind('<Configure>', lambda x: self.onConfigure())
+		self.containedFrame = frame
+		
+	def onConfigure(self):
+		'''
+		Update the scrollbar regions.
+		'''
+		#TODO: fix this method
+		fr = self.containedFrame
+		self.canvas.configure(scrollregion=(fr.winfo_height()*.8, 0, fr.winfo_width(), fr.winfo_height()))
+
 class MainApp:
 	'''
 	The main app. Displays all the graphic elements and handles the importing of data and calling the compilation task.
@@ -29,34 +63,32 @@ class MainApp:
 		'''
 		# Top panel
 		menuView = view.MenuView(root)
-		menuView.pack(fill=X, pady=10, padx=5)
+		menuView.grid(row=0, column=0, columnspan=4, sticky=W+E)
 		
 		# Middle panel
-		container = Frame(root)
-		container.pack(fill=BOTH, expand=True, pady=10)
+		scrollFrame = ScrollFrame(root)
+		scrollFrame.grid(row=1, column=0, columnspan=3, sticky=N+E+S+W)
 		
-		dataCanvas = Canvas(container)
-		dataCanvas.pack(side=LEFT, fill=BOTH, expand=True)
-		dataView = view.DataView(dataCanvas)
-		dataView.pack(fill=BOTH, padx=10, pady=10)
-		
-		sb = Scrollbar(container, orient="vertical", command=dataCanvas.yview)
-		sb.pack(side=LEFT, fill=Y)
-		dataCanvas.configure(yscrollcommand=sb.set)
-		
-		templateView = view.TemplateView(container, None)
-		templateView.pack(side=RIGHT, fill=Y)
-		
-		# Bottom panel
-		bottomView = Frame(root)
-		bottomView.pack(side=BOTTOM, fill=X)
-		Label(bottomView, text='Texvoice© Chiel Bruin').pack(side=RIGHT)
+		dataView = view.DataView(scrollFrame.canvas)
+		scrollFrame.attach(dataView)
+		dataView.pack(side=TOP)
 			
+		templateView = view.TemplateView(root, None)
+		templateView.grid(row=1, column=3, sticky=N+E)
+		
+		# Bottom panel			
 		optionView = view.OptionView(root)
-		optionView.pack(fill=X, side=BOTTOM, pady=10)
+		optionView.grid(row=2, column=0, columnspan=4, sticky=W)
 		
 		globalView = view.OptionView(root)
-		globalView.pack(fill=X, side=BOTTOM, pady=10)
+		globalView.grid(row=3, column=0, columnspan=4, sticky=W)
+		
+		bottomView = Frame(root)
+		bottomView.grid(row=4, column=0, columnspan=4, sticky=W+E)
+		Label(bottomView, text='Texvoice© Chiel Bruin').pack(side=RIGHT)
+		
+		root.grid_columnconfigure(0, weight='1')
+		root.grid_rowconfigure(1, weight='1')
 		
 		return {
 			'main': root,
