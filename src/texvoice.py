@@ -23,10 +23,10 @@ if __name__ == '__main__':
 
 	#args = parser.parse_args()
 	
-	if args.mode:
-		if args.mode is 'compile':
-			print('Compile mode')
-		if args.mode is 'load':
-			print('Load mode')
-	else :
-		MainApp().draw()
+	#if args.mode:
+		#if args.mode is 'compile':
+			#print('Compile mode')
+		#if args.mode is 'load':
+			#print('Load mode')
+	#else :
+	MainApp().draw()

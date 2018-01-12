@@ -51,7 +51,7 @@ class TemplateView (FrameView):
 			i += 1
 			
 		i += 1
-		add(grid, 'Latex packages', template.getProperty('requiredPackages').join('\n'), i):
+		add(grid, 'Latex packages', '\n'.join(template.getProperty('requiredPackages')), i)
 		
 		# Add extra fields
 		grid = Frame(self)
@@ -167,7 +167,7 @@ class OptionView (FrameView):
 			# Create container and name label	
 			container = Frame(self, background=bgColor)
 			container.pack(side=LEFT, padx=5, ipady=2, ipadx=2)
-			self.createButton(container, key, info, bgColor)
+			self._createButton(container, key, info, bgColor)
 			
 			# Field for string option
 			if type == 'string':
