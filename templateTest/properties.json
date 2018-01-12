@@ -24,5 +24,6 @@
 	"hours":  ["description", "vatPercentage(vat)", "duration(unit)", "wage(unitPrice)"],
 	"expenses": ["description", "price(unitPrice)", "vatPercentage(vat)"],
 	"travel" : ["description", "price(unitPrice)", "distance(unit)", "vatPercentage(vat)", "from", "to"]
-  }
+  },
+  "requiredPackages": ["inputenc", "babel", "enumitem", "graphicx", "tabularx", "booktabs", "fix-cm", "hyperref", "eurosym"]
 }

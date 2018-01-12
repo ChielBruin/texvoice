@@ -49,6 +49,9 @@ class TemplateView (FrameView):
 		for field in ['name', 'description', 'author', 'license']:
 			add(grid, field, template.getProperty(field), i)
 			i += 1
+			
+		i += 1
+		add(grid, 'Latex packages', template.getProperty('requiredPackages').join('\n'), i):
 		
 		# Add extra fields
 		grid = Frame(self)
