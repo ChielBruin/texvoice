@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 
 
 class TKEditTable (Frame):
@@ -71,9 +72,10 @@ class TKEditTable (Frame):
 		'''
 		Delete the row at position idx
 		'''
-		# TODO: Display are you sure prompt
-		print(idx)
-		# TODO: Actually remove the row		
+		if messagebox.askokcancel(title='Delete row', message='Are u sure u want to delete this row?'):
+			self.height -= 1
+			for elem in self.grid_slaves(row=idx+2):
+				elem.grid_forget()	
 	
 	def get(self):
 		'''
