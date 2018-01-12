@@ -137,26 +137,34 @@ class OptionView (FrameView):
 		super(OptionView, self).__init__(root, **args)
 		self.values = {}
 		
+	def _createButton(self, container, key, info, bgColor):
+		'''
+		Dirty fix for creating the button tooltip.
+		Without this unneeded method call all buttons would display the same message.
+		'''
+		l = lambda: messagebox.showinfo(key, info)
+		Button(container, text=key, highlightthickness=0, bd=0, command=l, background=bgColor).pack(side=LEFT)
+			
 	def setOptions(self, options):
 		'''
 		Set the options and display them.
 		'''
 		self._clear()
-		bgColor = '#BBBBBB'
+		bgColor = '#CCCCCC'
 		
 		# For each option
 		for i, option in enumerate(options):
 			key = option['name']
 			info = option['desc']
-			type = 'string'
 			if 'type' in option:
 				type = option['type']
+			else:
+				type = 'string'
 			
 			# Create container and name label	
 			container = Frame(self, background=bgColor)
 			container.pack(side=LEFT, padx=5, ipady=2, ipadx=2)
-			l = lambda: messagebox.showinfo(key, info)		# TODO: fix this button
-			Button(container, text=key, highlightthickness=0, bd=0, command=l, background=bgColor).pack(side=LEFT)
+			self.createButton(container, key, info, bgColor)
 			
 			# Field for string option
 			if type == 'string':
