@@ -1,6 +1,5 @@
 from tvMainApp import MainApp
 import argparse
-import sys
 
 
 if __name__ == '__main__':
