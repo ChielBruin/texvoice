@@ -1,55 +1,48 @@
 # texvoice
-Create professional and consistent-looking invoices from the exports of your timekeeping tools using Latex templates.
+Texvoice allows you to simply generate invoices using latex templates. This way you can fully customize the invoice to your needs. Texvoice does not only support the amount of hours spent on a task, but also travel costs and general expenses. The tool also allows you to import data directly from exports of certain timekeeping applications, but is also very flexible as you can also create/review/change the data yourself before generating the invoice. Texvoice is primarily focussed on its GUI, but a commandline interface is also present.  
+Texvoice comes pre-packaged with a number of templates, but creating your own is encouraged in order to create a fully personalized invoice that fits your needs.
 
-This tool inserts the exported data in the selected Latex template and compiles it to a `.pdf` file.
-This way all invoices follow the exact same styling and this styling is fully configurable to your personal preference.  
-By creating your own template a custom invoice can be created that fits your company (some Latex knowledge is required for this).
-
-> ### Texvoice is currently being improved to its version 2.0, see the roadmap for more information
-
-## Supported timekeeping tools
-- [Timesheet](https://play.google.com/store/apps/details?id=com.rauscha.apps.timesheet) [Dutch version]
-
-Currently only the Dutch version is supported, due to a language specific `.csv`. format.
-By the usage of CSV config files, it is easy to add support for a new tool that exports CSV files.
+## Requirements
+Texvoice is verified to run on Linux, but it might be possible that calling the Latex compiler also works on Windows and Mac.
+- Python 3
+- Latex
 
 ## Template structure
-`texvoice` uses Latex templates for building the invoices. 
-These templates contain placeholder macros that are subsituted with the timekeeping data when creating the invoice.
-A template file is a `.zip` archive containing all the files that are needed by the template file itself.
-This template file is simply called `template.tex`. Furthermore, the archive should contain a file called `VERSION`. 
-This file contains the versions of texvoice for which the template is created and therefore is compatible.
-The archive should also contain a `example.pdf` example of the template, making the following structure:
-
+The templates used by texvoice describe how an invoice should be created. This is done using a Latex file with additional environments that mark locations where data should be inserted.  
+A template file is a `.zip` archive containing all the files that are needed by the template file itself and some additional files. This gives a template with the following file structure:
 ```
 MyTemplate.zip
      |
-     | VERSION
+     | properties.json
+     | example.png
      | template.tex
-     | example.pdf
+     | include/
 ```
+Here `template.tex` is the latex file containing the actual template and the optional include folder contains all the files that the Latex compiler needs to create the document. Next `example.png` is a thumbnail of the end result with a size of 200x300 pixels (WxH). Lastly the properties file contains all the information about the template. This ranges from a description and a license to the required Latex packages to compile and a list of custom static macros.
 
-### Keywords
-The template can contain several keywords that are substituted for values from the data when creating the invoices.
-These keywords belong to one of two groups, either related to a single task entry or globally to the entire invoice/project.
-As the second group contains accumulations of many entries, they might not contain sensible data. 
-For example the description field remains empty and the VAT percentage becomes a weighted average.
-The two groups also contain two scoping levels. The first (local) level applies to either the hours, the expenses or the travel costs. The global scope uses the totals of the three local scopes.
+### Environments
+The template latex file as based around a number of environments and macros. These are replaced by texvoice in order to create the final Latex source file that is converted to a PDF. The macros can be used in two cases, either globally or locally for a single data entry. These two types are distinguished by the current environment. The `texvoiceListing` environment is an environment that is duplicated for each entry in the dataset and contains all the local macros. Multiple instances of such an environment can be created, where data that did not fit will overflow to the next instance. For this to work correctly, a maximum number of repititions can be given to limit the size of a single instance. In addition to using multiple instances, one could also wrap it inside a `texvoicePage` environment that allows to create multiple instances of the `texvoiceListing` using only a single delaration. This environment accepts an optional argument that will be prefixed beginning from the secon application. Using for example `\clearpage` here, allows you to create as many new pages as are possible to fit all the data.
 
+Within both the global and local scopes, there exist four distinct groups. The first three are wrapped in their own environments (`hours`, `expenses`, `travel`) and contain the actual data replacement macros and the last acts as an accumulation of the three groups containing, among others, totals of the prices. When used in local scope the macros will only apply to a single data entry and when used globally only the totals will be presented. In this case you must note that for some fields an average is computed, making usage of these fields not very usefull in some cases.
+
+Below the layout of all the environments is made more graphical.
 ``` Latex
-% Listing for each data entry
-\begin{texvoiceListing}
-     \begin{hours}
-          ...  % Only hour fields 
-     \end{hours}
-     \begin{expenses}
-          ...  % Only expenses fields
-     \end{expenses}
-     \begin{travel}
-          ...  % Only travel fields
-     \end{travel}
-     ...  % Accumulative data of the three groups
-\end{texvoiceListing}
+% Repeat this untill no more data can be applied
+\begin{texvoicePage}[\clearpage]        % Allows for an optional prefix
+    % Listing for each data entry
+    \begin{texvoiceListing}[9]          % Optional maximum size of the listing
+         \begin{hours}
+              ...  % Only hour fields 
+         \end{hours}
+         \begin{expenses}
+              ...  % Only expenses fields
+         \end{expenses}
+         \begin{travel}
+              ...  % Only travel fields
+         \end{travel}
+         ...  % Accumulative data of the three groups
+    \end{texvoiceListing}
+\end{texvoicePage}
 
 % Totals/averages of all entries
 \begin{hours}
@@ -63,82 +56,60 @@ The two groups also contain two scoping levels. The first (local) level applies 
 \end{travel}
 ...  % Accumulative data of the three groups
 ```
-In the template you can choose any of the following keywords that will be substituted. 
-Note, again, that in the outer scope averages and accumulative values are used, so the values they contain might not make very much sense to use.
+### Macros
+In the environment structure described in the section above, numerous macros can be used. Some macros work in every environment, while others only work in some. Not all macros are available in the global scope, but the supported ones are marked with a *. Note, again, that in the outer scope averages and accumulative values are used, so the values they contain might not make very much sense to use in your case.
 
-- `\description`  
- The description of the entry
+At each point you can use the following macros:  
 - `\subtotal`  
- The total price of this entry excluding VAT
+ The total price excluding VAT
 - `\total`  
- The total price of this entry including VAT
+ The total price including VAT
 - `\vatPercentage`  
  The VAT percentage on the price
 - `\vat`  
- The total VAT added on the price
+ The total VAT added to the price
 
-Each of the three sections can make use of some extra keywords. The ones marked with a `*` can also be used in the outer scope.
-
+For each of the three other environments, you can use the following macros:  
 _Hours_
+- `\description`  
+ The description of the task
 - `\duration*`  
  The amount of hours spent on this task
 - `\wage*`  
  The hourly wage for this task
  
 _Expenses_
+- `\description`  
+ The description of the bought object
+- `\price`*  
+ The price of the object bought
 
 _Travel_
-- `\price*`  
- The price per unit of travel
 - `\distance*`  
  The distance traveled
+- `\price`*  
+ The price per distance unit
 - `\from`  
  The origin of the trip
 - `\to`  
  The destination of the trip
  
-Throughout the entire document some other keywords related to the invoice are substituted:
-- `\clientName`  
- The (company) name of the client
-- `\projectID`  
- The ID given to this project
-- `\invoiceID`  
- The ID of this invoice as a method of distinguishing different invoices for the same client
-- `\projectDescription`  
- The description of the project
- 
- ## Roadmap
- I am currently working on improving the tool quite a bit. These changes will result in the 2.0 version of texvoice, and will include the following features (checked options already implemented):
- - A proper GUI instead of the CLI interface
-   - [X] Views that show the data and allow for modifications
-   - [X] A list of configurable options
-   - [X] Template selection
-   - [X] Template previews
-   - [X] A compile button
-   - [X] Display compile feedback
-   - [X] Possibility to import data exports
-   - [ ] Rework the CLI interface
-   
- - An improved compiler
-   - [X] Make the compiler more modular
-   - [X] Change the data imput format
-   - [X] Try to stay comliant with the compiler2
-   - [X] Add maximum length for a listing
-   - [X] Add listing pages
-   
- - Update data loading
-   - [X] Improve the loader to a new output format
-   - [X] General refactoring
-   
- - Update the template format
-   - [X] Change the preview to an image
-   - [X] Change the version file to include more data
-   - [X] Add author/copyright fields
-   - [X] Add a description
-   - [X] Allow for custom fields
-   - [X] Add required tag data to check compatibility when compiling
- 
- The current tool will remain working until the work finishes on V2.0. This newer version will then replace the original tool. Check the `texvoice2` branch for the progress being made.
- 
- ## Contributions
- Feel free to contribute new templates or add support for more timekeeping tools
+In addition to the macros described here, a template is also free to define more macros with static values. These can be usefull for for example an invoice ID, or the name of a client.
+
+## Data format
+Texvoice uses an intermediate data format to pass data from the loader to the GUI and to the compiler. When using the CLI interface, you will need to work with this format. 
+
+# TODO: complete this section
+
+## Supported imput methods
+Data can in theory be loaded from various formats, but in practice only supports a few. Texvoice currently has support for CSV files in combination with CSV-configs describing which data is stored in which column. Besides this mapping the configs also allow for some simple function for correctly formatting the data. For the following timekeeping tools a config is available, such that they can be used to import data from:  
+- [Timesheet](https://play.google.com/store/apps/details?id=com.rauscha.apps.timesheet) [Dutch version]
+
+Currently only the Dutch version is supported, due to a language specific `.csv`. format.
+
+## Development
+Currently texvoice is on its version 2. Previously the tool was mostly a proof of concept with a terrible commandline interface for running it. For version 2 almost the entire codebase was rewritten to make the compiler way more modular (see (dataFormat)[the data format section]), introduce a GUI, update the template format and make it more reliable as a whole.  
+
+At this point there are still a number of known issues with the program, but as the tool already works way better than the original program it was decided to move to the newer version. All the needed functionalities are there, but some things need some attention to the details to make them perfect. For an overview of known issues, see the issues that are currently open.  
+
+Feel free to fix issues, add new functionalities or create more templates.
