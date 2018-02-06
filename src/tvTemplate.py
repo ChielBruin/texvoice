@@ -163,10 +163,10 @@ class Template:
 				subtotal = totals['subtotal']
 				vat = totals['vat']
 				
-				tmp = self.applyField('subtotal', '€%.2f' % subtotal, tmp)
-				tmp = self.applyField('total', '€%.2f' % (subtotal + vat), tmp)
-				tmp = self.applyField('vatPercentage', '%.2f\\%%' % ((vat/subtotal) * 100) if not (vat == 0) else '0\\%', tmp)
-				tmp = self.applyField('vat', '€%.2f' % vat, tmp)
+				tmp = self.applyField('subtotal', subtotal, tmp)
+				tmp = self.applyField('total', (subtotal + vat), tmp)
+				tmp = self.applyField('vatPercentage', ((vat/subtotal) * 100) if not (vat == 0) else '0', tmp)
+				tmp = self.applyField('vat', vat, tmp)
 				
 				res += tmp
 			else:
@@ -180,11 +180,16 @@ class Template:
 		Apply all the fields with the given name to get the given value.
 		'''
 		FUNCTIONS = {
-			'vat': lambda key, val: '%.2f\\%%' % float(val),
+			'vatPercentage': lambda key, val: '%.2f\\%%' % float(val),
 			'unitPrice': lambda key, val: '€%.2f' % float(val),
+			'subtotal': lambda key, val: '€%.2f' % float(val),
+			'total': lambda key, val: '€%.2f' % float(val),
+			'vat': lambda key, val: '€%.2f' % float(val),
 			'unit': lambda key, val: str(val) if not (key == 'duration') else (lambda v: str(int(v)) + ':' + '%02d' % (int((v%1)*60))) (float(val))
 		}
-		if '(' in key:
+		if key in FUNCTIONS:
+			value = FUNCTIONS[key](key, str(value))
+		elif '(' in key:
 			key, func = key.split('(')
 			func = func[:-1]
 			if func in FUNCTIONS:
@@ -221,7 +226,8 @@ class Template:
 		# Do not pop the data when it is not needed
 		if (not len(data['data']) is 0) and (lambda x, y: not x[0] is -1)(*self._findSection(group, tex=tex)):
 			row = data['data'].pop(0)
-			totals = addTotals(totals, row, data['keys'])
+			if totals:
+				totals = addTotals(totals, row, data['keys'])
 		
 		# Change all the groups
 		changed = False

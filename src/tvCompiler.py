@@ -60,12 +60,6 @@ def checkTemplateVersion(version):
 	'''
 	return version in [2, 3]
 	
-def priceToString(price):
-	'''
-	Convert a price to a string representation.
-	'''
-	return '€%.2f'%price
-	
 def generateAccumulatives(data):
 	'''
 	Generate the totals from the data.
@@ -114,9 +108,9 @@ def generateAccumulatives(data):
 			total = subtotal + vat
 			
 			row.extend([
-				priceToString(subtotal), 
-				priceToString(vat), 
-				priceToString(total)
+				str(subtotal), 
+				str(vat), 
+				str(total)
 			])
 			
 			# Add to the accumilative data
@@ -126,23 +120,23 @@ def generateAccumulatives(data):
 		
 		# Add group totals to the data
 		acc['groups'][group] = {'keys': ['subtotal', 'vat', 'total'], 'data': [[
-			priceToString(totalSubtotal), 
-			priceToString(totalVat), 
-			priceToString(totalSubtotal + totalVat)
+			str(totalSubtotal), 
+			str(totalVat), 
+			str(totalSubtotal + totalVat)
 		]]}
 		
 		accData = acc['groups'][group]
 		keys = data[group]['keys']
 		
 		accData['keys'].extend([
-			keys[unitPriceIdx].split('(')[0], 
-			keys[unitIdx].split('(')[0],
-			keys[vatIdx].split('(')[0]
+			keys[unitPriceIdx], 
+			keys[unitIdx],
+			keys[vatIdx]
 		])
 		accData['data'][0].extend([
-			priceToString(totalSubtotal / totalUnits) if not (totalUnits == 0) else '0',
+			str(totalSubtotal / totalUnits) if not (totalUnits == 0) else '0',
 			str(totalUnits),
-			'%.2f\\%%' % ((totalVat/totalSubtotal) * 100) if not (totalVat == 0) else '0\\%'
+			str((totalVat/totalSubtotal) * 100) if not (totalVat == 0) else '0'
 		])
 		
 		# Add group totals to accumilative totals
@@ -151,9 +145,9 @@ def generateAccumulatives(data):
 		
 	# Add the global totals
 	acc['global'] = {'keys': ['subtotal', 'vat', 'vatPercentage', 'total'], 'data': [[
-		priceToString(globalSubtotal), 
-		priceToString(globalVat), 
-		'%.2f\\%%' % ((globalVat/globalSubtotal) * 100) if not (globalVat == 0) else '0\\%', 
-		priceToString(globalSubtotal + globalVat)
+		str(globalSubtotal), 
+		str(globalVat), 
+		str((globalVat/globalSubtotal) * 100) if not (globalVat == 0) else '0', 
+		str(globalSubtotal + globalVat)
 	]]}
 	data['accumulated'] = acc
