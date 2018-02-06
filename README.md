@@ -94,7 +94,7 @@ _Travel_
 - `\to`  
  The destination of the trip
  
-In addition to the macros described here, a template is also free to define more macros with static values. These can be usefull for for example an invoice ID, or the name of a client.
+In addition to the macros described here, a template is also free to define more macros with static values. These can be useful for an invoice ID, or the name of a client.
 
 ## Data format
 Texvoice uses an intermediate data format to pass data from the loader to the GUI and to the compiler. When using the CLI interface, you will need to work with this format. 
