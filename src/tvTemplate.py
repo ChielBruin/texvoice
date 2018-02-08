@@ -185,7 +185,7 @@ class Template:
 			'subtotal': lambda key, val: '€%.2f' % float(val),
 			'total': lambda key, val: '€%.2f' % float(val),
 			'vat': lambda key, val: '€%.2f' % float(val),
-			'unit': lambda key, val: str(val) if not (key == 'duration') else (lambda v: str(int(v)) + ':' + '%02d' % (int((v%1)*60))) (float(val))
+			'unit': lambda key, val: str(val) if not (key == 'duration') else (lambda v: str(int(v)) + ':' + '%02d' % (int((v%1 + 0.005)*60))) (float(val))
 		}
 		if key in FUNCTIONS:
 			value = FUNCTIONS[key](key, str(value))
