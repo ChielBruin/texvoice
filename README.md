@@ -97,9 +97,9 @@ _Travel_
 In addition to the macros described here, a template is also free to define more macros with static values. These can be useful for an invoice ID, or the name of a client.
 
 ## Data format
-Texvoice uses an intermediate data format to pass data from the loader to the GUI and to the compiler. When using the CLI interface, you will need to work with this format. 
+Texvoice uses an intermediate data format to pass data from the loader to the GUI and to the compiler. When using the CLI interface, you will need to work with this format. Due to the modular nature of the compiler, this allows you to introduce your own environments and use it for other things than invoices. 
 
-# TODO: complete this section
+## CSV config files
 
 ## Supported imput methods
 Data can in theory be loaded from various formats, but in practice only supports a few. Texvoice currently has support for CSV files in combination with CSV-configs describing which data is stored in which column. Besides this mapping the configs also allow for some simple function for correctly formatting the data. For the following timekeeping tools a config is available, such that they can be used to import data from:  
@@ -108,7 +108,7 @@ Data can in theory be loaded from various formats, but in practice only supports
 Currently only the Dutch version is supported, due to a language specific `.csv`. format.
 
 ## Development
-Currently texvoice is on its version 2. Previously the tool was mostly a proof of concept with a terrible commandline interface for running it. For version 2 almost the entire codebase was rewritten to make the compiler way more modular (see (dataFormat)[the data format section]), introduce a GUI, update the template format and make it more reliable as a whole.  
+Currently texvoice is on its version 2. Previously the tool was mostly a proof of concept with a terrible commandline interface for running it. For version 2, almost the entire codebase was rewritten to make the compiler way more modular (see (dataFormat)[the data format section]), introduce a GUI, update the template format and make it more reliable as a whole.  
 
 At this point there are still a number of known issues with the program, but as the tool already works way better than the original program it was decided to move to the newer version. All the needed functionalities are there, but some things need some attention to the details to make them perfect. For an overview of known issues, see the issues that are currently open.  
 
