@@ -111,15 +111,18 @@ def parseConfigLine(line):
 		arg = None
 		if '{' in func:
 			(func, arg) = ''.join(func.rsplit('}', 1)).split('{')
+		if not func.upper() in FUNCTIONS:
+			raise Exception('Unknown function ' + func)
 		return lambda x: FUNCTIONS[func.upper()](x, arg)
 		
 	FUNCTIONS = {
+		'ENDON' : lambda x, arg: x.split(arg)[0],					# Split a string to end on the specified character(s)
 		'FACTOR2PERCENTAGE' : lambda x, arg: (float(x)-1) * 100,	# Make a percentage from a factor (multiplier)
-		'TIMESTAMP' : lambda x, arg: 								# Parse a duration timestamp to a float
-				(lambda time: float(time[0] + time[1] / float(60)))(list(map(lambda v: int(v), x.split(':')))),
 		'DECIMALCOMMA' : lambda x, arg: x.replace(',', '.'),		# Replace the comma to a dot in the decimal notation
 		'DEFAULT' : lambda x, arg: arg if x is '' else x,			# When empty insert the default value
-		'EMPTY' : lambda x, arg: '' if x is arg else x				# If equal to the argument make it empty
+		'EMPTY' : lambda x, arg: '' if x is arg else x,				# If equal to the argument make it empty
+		'TIMESTAMP' : lambda x, arg: 								# Parse a duration timestamp to a float
+				(lambda time: float(time[0] + time[1] / float(60)))(list(map(lambda v: int(v), x.split(':'))))
 	}
 	
 	# Pre-checks
